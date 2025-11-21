@@ -1,0 +1,82 @@
+﻿using BackEndFinal.BUS;
+using BackEndFinal.DTO;
+using BackEndFinal.Model;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BackEndFinal.Controllers
+{
+    [Route("api/ctsv")]
+    [ApiController]
+    public class CtsvController : ControllerBase
+    {
+        // 1. Chỉ khai báo duy nhất BUS, bỏ DAO đi
+        private readonly QuanLyHocTapBUS _bus;
+
+        // 2. Sửa Constructor: Chỉ nhận BUS
+        public CtsvController(QuanLyHocTapBUS bus)
+        {
+            _bus = bus;
+        }
+
+        // API: POST api/ctsv/add-student
+        [HttpPost("add-student")]
+        public IActionResult ThemSinhVien([FromBody] SinhVien sv)
+        {
+            try
+            {
+                // 3. Gọi BUS thay vì gọi DAO
+                // Hàm này trong BUS sẽ làm 2 việc: Thêm SV + Tạo User
+                _bus.ThemSinhVienMoi(sv);
+                return Ok("Thêm sinh viên và tự động tạo tài khoản thành công.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
+
+        // API: POST api/ctsv/nhap-diem
+        [HttpPost("nhap-diem")]
+        public IActionResult NhapDiem([FromBody] NhapDiemDTO input)
+        {
+            try
+            {
+                _bus.XuLyNhapDiem(input); // Đã dùng BUS -> Chuẩn
+                return Ok("Đã nhập điểm và xét học bổng thành công.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
+
+        // API: POST api/ctsv/ky-luat
+        [HttpPost("ky-luat")]
+        public IActionResult ThemKyLuat([FromBody] KyLuat kl)
+        {
+            // 4. Gọi BUS (Bạn cần vào BUS viết thêm hàm ThemKyLuat nhé)
+            // Đừng gọi _dao.AddKyLuat(kl) nữa
+            try
+            {
+                _bus.ThemKyLuat(kl); // Giả sử bạn đã thêm hàm này bên BUS
+                return Ok("Đã ghi nhận kỷ luật.");
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        // API: DELETE api/ctsv/delete-student/SV01
+        [HttpDelete("delete-student/{maSV}")]
+        public IActionResult XoaSinhVien(string maSV)
+        {
+            try
+            {
+                _bus.XoaSinhVien(maSV); // Đã dùng BUS -> Chuẩn
+                return Ok($"Đã xóa thành công sinh viên {maSV}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
+    }
+}

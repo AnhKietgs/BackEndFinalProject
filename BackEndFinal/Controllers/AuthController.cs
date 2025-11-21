@@ -1,0 +1,47 @@
+﻿using BackEndFinal.BUS;
+using BackEndFinal.DAO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BackEndFinal.Controllers
+{
+    [Route("api/auth")]
+    [ApiController]
+    public class AuthController : ControllerBase
+    {
+        private readonly QuanLyHocTapBUS _bus;
+
+        public AuthController(QuanLyHocTapBUS bus)
+        {
+            _bus = bus;
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginDTO input)
+        {
+            // input.Username là MaSV, input.Password là SĐT
+            var user = _bus.CheckLogin(input.Username, input.Password);
+
+            if (user == null)
+            {
+                return Unauthorized("Sai tài khoản hoặc mật khẩu!");
+            }
+
+            // Đăng nhập thành công -> Trả về thông tin User (để Frontend biết đường chuyển trang)
+            return Ok(new
+            {
+                message = "Đăng nhập thành công",
+                role = user.Role,
+                maSV = user.Username // Trả về MaSV để Frontend dùng nó gọi API xem điểm
+            });
+        }
+    }
+
+    // Class DTO nhỏ để hứng dữ liệu login
+    
+    public class LoginDTO
+    {
+        public required string Username { get; set; }
+        public required string Password { get; set; }
+    }
+}
