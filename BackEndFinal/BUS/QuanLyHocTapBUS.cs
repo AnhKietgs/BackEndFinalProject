@@ -1,6 +1,7 @@
 ﻿using BackEndFinal.DAO;
 using BackEndFinal.DTO;
 using BackEndFinal.Model;
+using BackEndFinalEx.DTO;
 
 namespace BackEndFinal.BUS
 {
@@ -57,8 +58,10 @@ namespace BackEndFinal.BUS
             {
                 MaSV = sv.MaSV,
                 HoTen = sv.HoTen,
-                Lop = sv.Lop,
-
+                DiaChi = sv.DiaChi,
+                NgaySinh = sv.NgaySinh,
+                GioiTinh = sv.GioiTinh,
+                SoDienThoai = sv.SoDienThoai,   
                 // Chuyển danh sách Điểm sang dạng rút gọn
                 DanhSachDiem = sv.KetQuaHocTaps
                 .OrderBy(k => k.TenHocKy) //Sắp xếp theo tên học kỳ (A->Z)
@@ -125,10 +128,10 @@ namespace BackEndFinal.BUS
             {
                 _userDao.DeleteUser(maSV);
             }
-            // 1. Xóa thông tin sinh viên (Kèm điểm số, kỷ luật - EF Core thường tự xóa theo)
+            //  Xóa thông tin sinh viên (Kèm điểm số, kỷ luật - EF Core thường tự xóa theo)
             _dao.DeleteSinhVien(maSV);
 
-            // 2. Xóa luôn tài khoản đăng nhập của sinh viên đó
+            //  Xóa luôn tài khoản đăng nhập của sinh viên đó
            
         }
         public User? CheckLogin(string username, string password)
@@ -143,6 +146,67 @@ namespace BackEndFinal.BUS
             _dao.AddKyLuat(kl);
             // (Lưu ý: Bạn phải đảm bảo _dao ở đây là SinhVienDAO và nó có hàm AddKyLuat)
         }
-    }
+        public ThongTinCaNhanDTO? LayThongTinCaNhan(string maSV)
+        {
+            var sv = _dao.GetSinhVienFullInfo(maSV); // Gọi DAO lấy data gốc
+            if (sv == null) return null;
 
+            // Map sang DTO thông tin cá nhân
+            return new ThongTinCaNhanDTO
+            {
+                MaSV = sv.MaSV,
+                HoTen = sv.HoTen,
+                NgaySinh = sv.NgaySinh.ToString("dd/MM/yyyy"),
+                GioiTinh = sv.GioiTinh,
+                DiaChi = sv.DiaChi,
+                SoDienThoai = sv.SoDienThoai
+            };
+        }
+        public KetQuaTraCuuDTO LayKetQuaHocTapTheoKy(string maSV, string hocKy, string namHoc)
+        {
+            var sv = _dao.GetSinhVienFullInfo(maSV); // Lấy data gốc
+            if (sv == null) throw new Exception("Không tìm thấy sinh viên");
+
+            var ketQuaDTO = new KetQuaTraCuuDTO
+            {
+                HocKy = hocKy,
+                NamHoc = namHoc
+            };
+
+            // a. Lọc tìm Điểm của kỳ đó (Sử dụng LINQ)
+            // Giả sử trong bảng KetQuaHocTap bạn cũng đã có cột HocKy và NamHoc
+            // Nếu chưa có thì bạn phải dựa vào TenHocKy để tách chuỗi, nhưng tốt nhất là nên có cột riêng.
+            // Ở đây mình giả định bảng KetQuaHocTap có cột TenHocKy chứa thông tin dạng "Học kỳ 1 - 2024-2025" để so sánh tạm thời.
+            // CÁCH CHUẨN NHẤT: Bảng KetQuaHocTap cũng nên tách 2 cột HocKy, NamHoc như bảng KyLuat.
+
+            // Tạm dùng cách so sánh chuỗi (bạn nên điều chỉnh lại cho khớp DB của bạn)
+            string tenHocKyCanTim = $"{hocKy} - {namHoc}";
+            var diemCuaKy = sv.KetQuaHocTaps.FirstOrDefault(k => k.TenHocKy.Contains(hocKy) && k.TenHocKy.Contains(namHoc));
+
+            if (diemCuaKy != null)
+            {
+                ketQuaDTO.GPA = diemCuaKy.GPA;
+                ketQuaDTO.DiemRenLuyen = diemCuaKy.DiemRenLuyen;
+                ketQuaDTO.XepLoaiHocBong = diemCuaKy.XepLoaiHocBong;
+            }
+
+            // b. Lọc tìm Kỷ luật của kỳ đó (Sử dụng LINQ)
+            // (Dựa trên 2 cột HocKy, NamHoc vừa thêm ở bài trước)
+            var kyLuatCuaKy = sv.KyLuats
+                                .Where(kl => kl.HocKy == hocKy && kl.NamHoc == namHoc)
+                                .ToList();
+
+            if (kyLuatCuaKy.Any())
+            {
+                ketQuaDTO.DanhSachKyLuat = kyLuatCuaKy.Select(kl => new ChiTietKyLuatDTO
+                {
+                    NoiDung = kl.NoiDung,
+                    NgayQuyetDinh = kl.NgayQuyetDinh.ToString("dd/MM/yyyy")
+                }).ToList();
+            }
+
+            return ketQuaDTO;
+        }
+    }
 }
+

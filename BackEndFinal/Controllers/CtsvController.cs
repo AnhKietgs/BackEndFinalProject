@@ -1,6 +1,7 @@
 ﻿using BackEndFinal.BUS;
 using BackEndFinal.DTO;
 using BackEndFinal.Model;
+using BackEndFinalEx.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndFinal.Controllers
@@ -20,13 +21,24 @@ namespace BackEndFinal.Controllers
 
         // API: POST api/ctsv/add-student
         [HttpPost("add-student")]
-        public IActionResult ThemSinhVien([FromBody] SinhVien sv)
+        public IActionResult ThemSinhVien([FromBody] ThemSinhVienDTO input)
         {
             try
-            {
-                // 3. Gọi BUS thay vì gọi DAO
-                // Hàm này trong BUS sẽ làm 2 việc: Thêm SV + Tạo User
-                _bus.ThemSinhVienMoi(sv);
+            {//mapping
+                var svEntity = new SinhVien
+                {
+                    MaSV = input.MaSV,
+                    HoTen = input.HoTen,
+                    SoDienThoai = input.SoDienThoai,
+                    DiaChi = input.DiaChi,
+                    NgaySinh = input.NgaySinh,
+                    GioiTinh = input.GioiTinh,
+
+                    // Các danh sách con để rỗng hoặc null, vì mình không nhập lúc này
+                    KetQuaHocTaps = new List<KetQuaHocTap>(),
+                    KyLuats = new List<KyLuat>()
+                };
+                _bus.ThemSinhVienMoi(svEntity);
                 return Ok("Thêm sinh viên và tự động tạo tài khoản thành công.");
             }
             catch (Exception ex)
@@ -52,13 +64,22 @@ namespace BackEndFinal.Controllers
 
         // API: POST api/ctsv/ky-luat
         [HttpPost("ky-luat")]
-        public IActionResult ThemKyLuat([FromBody] KyLuat kl)
+        public IActionResult ThemKyLuat([FromBody] ThemKyLuatDTO input)
         {
+            var kyLuatEntity = new KyLuat
+            {
+                MaSV = input.MaSV,
+                NoiDung = input.NoiDung,
+                NgayQuyetDinh = input.NgayQuyetDinh,
+                // MAPPING THÊM 2 TRƯỜNG MỚI
+                HocKy = input.HocKy,
+                NamHoc = input.NamHoc
+            };
             // 4. Gọi BUS (Bạn cần vào BUS viết thêm hàm ThemKyLuat nhé)
             // Đừng gọi _dao.AddKyLuat(kl) nữa
             try
             {
-                _bus.ThemKyLuat(kl); // Giả sử bạn đã thêm hàm này bên BUS
+                _bus.ThemKyLuat(kyLuatEntity); // Giả sử bạn đã thêm hàm này bên BUS
                 return Ok("Đã ghi nhận kỷ luật.");
             }
             catch (Exception ex) { return BadRequest(ex.Message); }

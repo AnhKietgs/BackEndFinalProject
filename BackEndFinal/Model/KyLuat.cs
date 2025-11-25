@@ -8,6 +8,8 @@ namespace BackEndFinal.Model
         public required string MaSV { get; set; }
         public required string NoiDung { get; set; } // VD: "Cảnh cáo mức 1"
         public DateTime NgayQuyetDinh { get; set; }
+        public required string HocKy { get; set; } // VD: "Học kỳ 1"
+        public required string NamHoc { get; set; } // VD: "2024-2025"
 
         [ForeignKey("MaSV")]
         public  SinhVien? SinhVien { get; set; }
