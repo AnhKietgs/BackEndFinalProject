@@ -95,10 +95,7 @@ namespace BackEndFinal.BUS
                 }
                 try
                 {
-                    // 1. Thêm Sinh viên
-                    
-
-                    // 2. Thêm User
+                    //Thêm User
                     var newUser = new User
                     {
                         Username = sv.MaSV,
@@ -107,7 +104,7 @@ namespace BackEndFinal.BUS
                     };
                     _userDao.AddUser(newUser);
                     _dao.AddSinhVien(sv);
-                    // 3. Nếu cả 2 bước trên đều ngon lành thì mới Lưu thật (Commit)
+                    //  Nếu cả 2 bước trên đều ngon lành thì mới Lưu thật (Commit)
                     transaction.Commit();
                 }
                 catch (Exception ex)
