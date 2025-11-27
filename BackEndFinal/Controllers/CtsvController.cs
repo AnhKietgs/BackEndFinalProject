@@ -23,6 +23,9 @@ namespace BackEndFinal.Controllers
         [HttpPost("add-student")]
         public IActionResult ThemSinhVien([FromBody] ThemSinhVienDTO input)
         {
+            DateTime ngaySinhUtc = input.NgaySinh.Kind == DateTimeKind.Utc
+                           ? input.NgaySinh
+                           : DateTime.SpecifyKind(input.NgaySinh, DateTimeKind.Utc);
             try
             {//mapping
                 var svEntity = new SinhVien
@@ -31,7 +34,7 @@ namespace BackEndFinal.Controllers
                     HoTen = input.HoTen,
                     SoDienThoai = input.SoDienThoai,
                     DiaChi = input.DiaChi,
-                    NgaySinh = input.NgaySinh,
+                    NgaySinh = ngaySinhUtc,
                     GioiTinh = input.GioiTinh,
 
                     // Các danh sách con để rỗng hoặc null, vì mình không nhập lúc này
@@ -98,6 +101,15 @@ namespace BackEndFinal.Controllers
             {
                 return BadRequest("Lỗi: " + ex.Message);
             }
+        }
+        [HttpGet("danh-sach-hoc-bong")]
+        public IActionResult GetDanhSachHocBong([FromQuery] string hocKy, [FromQuery] string namHoc)
+        {
+            if (string.IsNullOrEmpty(hocKy) || string.IsNullOrEmpty(namHoc))
+                return BadRequest("Vui lòng chọn kỳ và năm học.");
+
+            var list = _bus.LayDanhSachXetHocBong(hocKy, namHoc);
+            return Ok(list);
         }
     }
 }

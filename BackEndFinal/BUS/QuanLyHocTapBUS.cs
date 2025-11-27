@@ -14,75 +14,42 @@ namespace BackEndFinal.BUS
             _dao = dao;
             _userDao = userDao;
         }
+        // Hàm phụ trợ: Tự động tính xếp loại dựa trên GPA và ĐRL
+        private string TinhXepLoaiHocBong(double gpa, int diemRenLuyen)
+        {
+            if (gpa >= 3.6 && diemRenLuyen >= 90) return "Xuất sắc";
+            if (gpa >= 3.2 && diemRenLuyen >= 80) return "Giỏi";
+            if (gpa >= 2.5 && diemRenLuyen >= 70) return "Khá";
+            return "Không";
+        }
+        private string TinhXeploaiHocLuc(double gpa)
+        {
 
+            if (gpa >= 3.6) return "Xuất sắc";
+            if (gpa >= 3.2 ) return "Giỏi";
+            if (gpa >= 2.5 ) return "Khá";
+            if (gpa >= 2.0) return "Trung bình";
+                return "Yếu";
+        }
         // Hàm logic: Nhập điểm và Tự động xét học bổng
         public void XuLyNhapDiem(NhapDiemDTO input)
         {
-            // 1. Tính toán loại học bổng
-            string loaiHocBong = "Không";
 
-            if (input.GPA >= 3.6 && input.DiemRenLuyen >= 90)
-            {
-                loaiHocBong = "Xuất sắc";
-            }
-            else if (input.GPA >= 3.2 && input.DiemRenLuyen >= 70)
-            {
-                loaiHocBong = "Giỏi";
-            }
-            else if (input.GPA >= 2.5 && input.DiemRenLuyen >= 70)
-            {
-                loaiHocBong = "Khá";
-            }
-
-            // 2. Tạo đối tượng Model để gửi xuống DAO
+            //  Tạo đối tượng Model để gửi xuống DAO
             var ketQua = new KetQuaHocTap
             {
                 MaSV = input.MaSV,
-                TenHocKy = input.TenHocKy,
+                HocKy = input.HocKy,
+                NamHoc=input.NamHoc,
                 GPA = input.GPA,
                 DiemRenLuyen = input.DiemRenLuyen,
-                XepLoaiHocBong = loaiHocBong // Đã tự động tính
+                XepLoaiHocBong = TinhXepLoaiHocBong(input.GPA, input.DiemRenLuyen),
+                XepLoaiHocLuc=TinhXeploaiHocLuc(input.GPA)
             };
 
-            // 3. Gọi DAO để lưu
+            //  Gọi DAO để lưu
             _dao.SaveKetQua(ketQua);
         }
-
-        public ThongTinSinhVienDTO? LayThongTinChoSinhVien(string maSV)
-        {
-            var sv = _dao.GetSinhVienFullInfo(maSV);
-            if (sv == null) return null;
-
-            // Chuyển đổi sang DTO để trả về (Mapping)
-            return new ThongTinSinhVienDTO
-            {
-                MaSV = sv.MaSV,
-                HoTen = sv.HoTen,
-                DiaChi = sv.DiaChi,
-                NgaySinh = sv.NgaySinh,
-                GioiTinh = sv.GioiTinh,
-                SoDienThoai = sv.SoDienThoai,   
-                // Chuyển danh sách Điểm sang dạng rút gọn
-                DanhSachDiem = sv.KetQuaHocTaps
-                .OrderBy(k => k.TenHocKy) //Sắp xếp theo tên học kỳ (A->Z)
-                .Select(kq => new KetQuaDTO
-                {
-                    TenHocKy = kq.TenHocKy,
-                    GPA = kq.GPA,
-                    DiemRenLuyen = kq.DiemRenLuyen,
-                    XepLoaiHocBong = kq.XepLoaiHocBong
-                }).ToList(),
-
-                // Chuyển danh sách Kỷ luật sang dạng rút gọn
-                DanhSachKyLuat = sv.KyLuats.Select(kl => new KyLuatDTO
-                {
-                    NoiDung = kl.NoiDung,
-                    NgayQuyetDinh = kl.NgayQuyetDinh
-                }).ToList()
-            };
-
-        }
-
 
         public void ThemSinhVienMoi(SinhVien sv)
         {
@@ -123,16 +90,31 @@ namespace BackEndFinal.BUS
 
         public void XoaSinhVien(string maSV)
         {
-            var user = _userDao.CheckLogin(maSV, ""); // Hoặc hàm FindUser
-            if (user != null)
+            // Bắt đầu một giao dịch
+            // Lưu ý: Cần đảm bảo _svDao._context là public hoặc có property truy cập
+            using (var transaction = _dao._context.Database.BeginTransaction())
             {
-                _userDao.DeleteUser(maSV);
-            }
-            //  Xóa thông tin sinh viên (Kèm điểm số, kỷ luật - EF Core thường tự xóa theo)
-            _dao.DeleteSinhVien(maSV);
+                try
+                {
+                    // 1. Xóa User
+                    _userDao.DeleteUser(maSV);
 
-            //  Xóa luôn tài khoản đăng nhập của sinh viên đó
-           
+                    // 2. Xóa Sinh viên
+                    _dao.DeleteSinhVien(maSV);
+
+                    // 3. Nếu cả 2 lệnh trên trôi chảy thì mới Lưu thật (Commit)
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    // Nếu có bất kỳ lỗi gì xảy ra ở bước 1 hoặc 2
+                    // Hoàn tác lại tất cả, không xóa gì cả.
+                    transaction.Rollback();
+                    // Ném lỗi ra ngoài để Controller biết
+                    throw new Exception("Lỗi khi xóa sinh viên và tài khoản: " + ex.Message);
+                }
+            }
+
         }
         public User? CheckLogin(string username, string password)
         {
@@ -148,7 +130,7 @@ namespace BackEndFinal.BUS
         }
         public ThongTinCaNhanDTO? LayThongTinCaNhan(string maSV)
         {
-            var sv = _dao.GetSinhVienFullInfo(maSV); // Gọi DAO lấy data gốc
+            var sv = _dao.GetSinhVienBasicInfor(maSV); // Gọi DAO lấy data gốc
             if (sv == null) return null;
 
             // Map sang DTO thông tin cá nhân
@@ -156,7 +138,7 @@ namespace BackEndFinal.BUS
             {
                 MaSV = sv.MaSV,
                 HoTen = sv.HoTen,
-                NgaySinh = sv.NgaySinh.ToString("dd/MM/yyyy"),
+                NgaySinh = sv.NgaySinh,
                 GioiTinh = sv.GioiTinh,
                 DiaChi = sv.DiaChi,
                 SoDienThoai = sv.SoDienThoai
@@ -164,49 +146,81 @@ namespace BackEndFinal.BUS
         }
         public KetQuaTraCuuDTO LayKetQuaHocTapTheoKy(string maSV, string hocKy, string namHoc)
         {
-            var sv = _dao.GetSinhVienFullInfo(maSV); // Lấy data gốc
+            // 1. Lấy thông tin đầy đủ của sinh viên (bao gồm cả KetQuaHocTaps và KyLuats)
+            // Đảm bảo hàm GetSinhVienById trong DAO đã sử dụng .Include() để tải dữ liệu liên quan.
+            var sv = _dao.GetSinhVienFullInfo(maSV);
             if (sv == null) throw new Exception("Không tìm thấy sinh viên");
 
+            // 2. Khởi tạo DTO trả về với thông tin kỳ học
             var ketQuaDTO = new KetQuaTraCuuDTO
             {
                 HocKy = hocKy,
-                NamHoc = namHoc
+                NamHoc = namHoc,
+                // Khởi tạo danh sách kỷ luật rỗng để tránh null nếu không có kỷ luật nào
+                DanhSachKyLuat = new List<ChiTietKyLuatDTO>()
             };
 
-            // a. Lọc tìm Điểm của kỳ đó (Sử dụng LINQ)
-            // Giả sử trong bảng KetQuaHocTap bạn cũng đã có cột HocKy và NamHoc
-            // Nếu chưa có thì bạn phải dựa vào TenHocKy để tách chuỗi, nhưng tốt nhất là nên có cột riêng.
-            // Ở đây mình giả định bảng KetQuaHocTap có cột TenHocKy chứa thông tin dạng "Học kỳ 1 - 2024-2025" để so sánh tạm thời.
-            // CÁCH CHUẨN NHẤT: Bảng KetQuaHocTap cũng nên tách 2 cột HocKy, NamHoc như bảng KyLuat.
-
-            // Tạm dùng cách so sánh chuỗi (bạn nên điều chỉnh lại cho khớp DB của bạn)
-            string tenHocKyCanTim = $"{hocKy} - {namHoc}";
-            var diemCuaKy = sv.KetQuaHocTaps.FirstOrDefault(k => k.TenHocKy.Contains(hocKy) && k.TenHocKy.Contains(namHoc));
+            // 3. Lọc điểm của học kỳ và năm học đó
+            // Sử dụng so sánh chính xác (==) thay vì Contains cho HocKy và NamHoc
+            // Kiểm tra null cho KetQuaHocTaps để tránh lỗi nếu sinh viên chưa có điểm nào
+            var diemCuaKy = sv.KetQuaHocTaps?.FirstOrDefault(k => k.HocKy.Trim() == hocKy.Trim() && k.NamHoc.Trim() == namHoc.Trim());
 
             if (diemCuaKy != null)
             {
                 ketQuaDTO.GPA = diemCuaKy.GPA;
                 ketQuaDTO.DiemRenLuyen = diemCuaKy.DiemRenLuyen;
                 ketQuaDTO.XepLoaiHocBong = diemCuaKy.XepLoaiHocBong;
+                // Nếu DTO có trường XepLoaiHocLuc thì gán thêm vào đây
+                // ketQuaDTO.XepLoaiHocLuc = diemCuaKy.XepLoaiHocLuc;
             }
 
-            // b. Lọc tìm Kỷ luật của kỳ đó (Sử dụng LINQ)
-            // (Dựa trên 2 cột HocKy, NamHoc vừa thêm ở bài trước)
-            var kyLuatCuaKy = sv.KyLuats
-                                .Where(kl => kl.HocKy == hocKy && kl.NamHoc == namHoc)
-                                .ToList();
-
-            if (kyLuatCuaKy.Any())
+            // 4. Lọc danh sách kỷ luật của học kỳ và năm học đó
+            // Kiểm tra null cho KyLuats
+            if (sv.KyLuats != null)
             {
-                ketQuaDTO.DanhSachKyLuat = kyLuatCuaKy.Select(kl => new ChiTietKyLuatDTO
+                var kyLuatCuaKy = sv.KyLuats
+                                    .Where(kl => kl.HocKy.Trim() == hocKy.Trim() && kl.NamHoc.Trim() == namHoc.Trim())
+                                    .ToList();
+
+                if (kyLuatCuaKy.Any())
                 {
-                    NoiDung = kl.NoiDung,
-                    NgayQuyetDinh = kl.NgayQuyetDinh.ToString("dd/MM/yyyy")
-                }).ToList();
+                    ketQuaDTO.DanhSachKyLuat = kyLuatCuaKy.Select(kl => new ChiTietKyLuatDTO
+                    {
+                        NoiDung = kl.NoiDung,
+                        // Định dạng ngày tháng năm
+                        NgayQuyetDinh = kl.NgayQuyetDinh.ToString("dd/MM/yyyy")
+                    }).ToList();
+                }
             }
 
             return ketQuaDTO;
         }
+
+
+        public List<XemDSHocBongDTO> LayDanhSachXetHocBong(string hocKy, string namHoc)
+        {
+            // 1. Lấy tất cả kết quả học tập trong kỳ đó
+            // (Giả sử DAO có hàm lấy list này, kèm theo thông tin SinhVien)
+            var listKetQua = _dao.GetKetQuaByKy(hocKy, namHoc);
+
+            // 2. Lọc những người có học bổng (Khác "Không") và chuyển sang DTO hiển thị
+            var danhSachXetDuyet = listKetQua
+                .Where(kq => kq.XepLoaiHocBong != "Không" && kq.XepLoaiHocBong != null)
+                .Select(kq => new XemDSHocBongDTO
+                {
+                    MaSV = kq.MaSV,
+                    NamHoc=kq.NamHoc,
+                    HocKy = hocKy,
+                    GPA = kq.GPA,
+                    DiemRenLuyen = kq.DiemRenLuyen,
+                    XepLoaiHocBong = kq.XepLoaiHocBong
+                })
+                .OrderByDescending(x => x.GPA) // Sắp xếp điểm từ cao xuống thấp cho đẹp
+                .ToList();
+
+            return danhSachXetDuyet;
+        }
     }
+
 }
 

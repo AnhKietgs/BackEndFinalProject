@@ -15,10 +15,48 @@ namespace BackEndFinal.DAO
         // Lấy thông tin đầy đủ (cho chức năng Xem)
         public SinhVien? GetSinhVienFullInfo(string maSV)
         {
+            // Chuyển mã sinh viên cần tìm về chữ hoa (hoặc thường)
+            string maSVUpper = maSV.Trim().ToUpper();
+
             return _context.SinhViens
-                .Include(sv => sv.KetQuaHocTaps)
-                .Include(sv => sv.KyLuats)
-                .FirstOrDefault(sv => sv.MaSV == maSV);
+                .AsSplitQuery()
+                .Include(s => s.KetQuaHocTaps)
+                .Include(s => s.KyLuats)
+                // So sánh với mã trong database đã được chuyển về cùng dạng
+                .FirstOrDefault(s => s.MaSV.Trim().ToUpper() == maSVUpper);
+        }
+        public SinhVien? GetSinhVienBasicInfor(string maSV)
+        {
+            // 1. Kiểm tra đầu vào
+            if (string.IsNullOrWhiteSpace(maSV))
+            {
+                return null;
+            }
+
+            // Chuẩn hóa chuỗi tìm kiếm: Loại bỏ khoảng trắng thừa và chuyển về chữ hoa
+            string maSVChuanHoa = maSV.Trim().ToUpper();
+
+            // Thực hiện truy vấn
+            // Sử dụng .FirstOrDefault() để tìm bản ghi đầu tiên khớp hoặc trả về null nếu không thấy.
+            var sinhVien = _context.SinhViens
+                // So sánh mã trong DB (cũng được chuẩn hóa tương tự) với mã tìm kiếm
+                .FirstOrDefault(s => s.MaSV.Trim().ToUpper() == maSVChuanHoa);
+
+            return sinhVien;
+        }
+        public List<KetQuaHocTap> GetKetQuaByKy(string hocKy, string namHoc)
+        {
+            // _context là biến AppDbContext đã được khai báo trong DAO
+            return _context.KetQuaHocTaps
+                           // QUAN TRỌNG: Lệnh này báo cho EF Core biết hãy JOIN bảng SinhVien
+                           // để lấy luôn thông tin Họ tên, Lớp... đi kèm kết quả đó.
+                           .Include(k => k.SinhVien)
+
+                           // Lọc theo đúng kỳ và năm được yêu cầu
+                           .Where(k => k.HocKy == hocKy && k.NamHoc == namHoc)
+
+                           // Thực thi câu lệnh và chuyển thành danh sách
+                           .ToList();
         }
         public void AddSinhVien(SinhVien sv)
         {
@@ -31,13 +69,14 @@ namespace BackEndFinal.DAO
         {
             // Kiểm tra xem kỳ này có chưa, nếu có thì update, chưa thì thêm mới
             var existing = _context.KetQuaHocTaps
-                .FirstOrDefault(k => k.MaSV == kq.MaSV && k.TenHocKy == kq.TenHocKy);
+                .FirstOrDefault(k => k.MaSV == kq.MaSV && k.HocKy == kq.HocKy);
 
             if (existing != null)
             {
                 existing.GPA = kq.GPA;
                 existing.DiemRenLuyen = kq.DiemRenLuyen;
-                existing.XepLoaiHocBong = kq.XepLoaiHocBong; // Cập nhật loại học bổng mới
+                existing.XepLoaiHocBong = kq.XepLoaiHocBong;// Cập nhật loại học bổng mới
+                existing.XepLoaiHocLuc= kq.XepLoaiHocLuc;
             }
             else
             {

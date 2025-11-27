@@ -1,4 +1,5 @@
 ﻿using BackEndFinal.BUS;
+using BackEndFinalEx.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,8 +16,8 @@ namespace BackEndFinal.Controllers
             _bus = bus;
         }
 
-        // API: GET api/student/info/SV001
-        [HttpGet("basic-info/{maSV}")]
+        // API: GET api/student/info/SV01
+        [HttpGet("basic-info/{MaSV}")]
         public IActionResult GetBasicInfo(string MaSV)
         {
             var data = _bus.LayThongTinCaNhan(MaSV);
@@ -25,7 +26,7 @@ namespace BackEndFinal.Controllers
             return Ok(data);
         }
 
-        [HttpGet("academic-result/{maSV}")]
+        [HttpGet("academic-result/{MaSV}")]
         public IActionResult GetAcademicResult(string MaSV, [FromQuery] string HocKy, [FromQuery] string NamHoc)
         {
             try

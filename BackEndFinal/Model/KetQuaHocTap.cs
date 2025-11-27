@@ -6,11 +6,12 @@ namespace BackEndFinal.Model
     {
         public int Id { get; set; }
         public required string MaSV { get; set; }
-        public required string TenHocKy { get; set; } // VD: "Học kỳ 1 - 2024"
+        public required string HocKy { get; set; } 
+        public required string NamHoc { get; set; } 
 
         public double GPA { get; set; } // Hệ 4.0
         public int DiemRenLuyen { get; set; }
-
+        public required string XepLoaiHocLuc { get; set; }
         public required string XepLoaiHocBong { get; set; } // "Xuất sắc", "Giỏi", "Khá", "Không"
 
         [ForeignKey("MaSV")]
