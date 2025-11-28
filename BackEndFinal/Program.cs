@@ -27,12 +27,6 @@ builder.Services.AddCors(options =>
 
 // ... các middleware khác ...
 
-app.UseHttpsRedirection();
-app.UseCors("AllowAll");
-
-
-
-
 builder.Services.AddScoped<SinhVienDao>();
 builder.Services.AddScoped<QuanLyHocTapBUS>();
 builder.Services.AddScoped<UserDao>();
@@ -47,6 +41,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthorization();
 var app = builder.Build();
+app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
