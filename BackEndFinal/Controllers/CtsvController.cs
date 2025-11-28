@@ -102,16 +102,7 @@ namespace BackEndFinal.Controllers
                 return BadRequest("Lỗi: " + ex.Message);
             }
         }
-        [HttpGet("danh-sach-hoc-bong")]
-        public IActionResult GetDanhSachHocBong([FromQuery] string hocKy, [FromQuery] string namHoc)
-        {
-            if (string.IsNullOrEmpty(hocKy) || string.IsNullOrEmpty(namHoc))
-                return BadRequest("Vui lòng chọn kỳ và năm học.");
-
-            var list = _bus.LayDanhSachXetHocBong(hocKy, namHoc);
-            return Ok(list);
-        }
-
+   
         // API: PUT api/ctsv/update-student/
         [HttpPut("update-student/{maSV}")]
 
@@ -220,5 +211,15 @@ namespace BackEndFinal.Controllers
                 return StatusCode(500, "Lỗi server: " + ex.Message);
             }
         }
+        [HttpGet("danh-sach-hoc-bong")]
+        public IActionResult GetDanhSachHocBong([FromQuery] string hocKy, [FromQuery] string namHoc)
+        {
+            if (string.IsNullOrEmpty(hocKy) || string.IsNullOrEmpty(namHoc))
+                return BadRequest("Vui lòng chọn kỳ và năm học.");
+
+            var list = _bus.LayDanhSachXetHocBong(hocKy, namHoc);
+            return Ok(list);
+        }
+
     }
 }
