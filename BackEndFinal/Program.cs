@@ -4,7 +4,8 @@ using BackEndFinal.BUS;
 using BackEndFinal.DAO;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Lấy PORT của Render, nếu không có thì mặc định 8080
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -28,6 +29,8 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
 app.UseAuthorization();
+
+
 builder.Services.AddScoped<SinhVienDao>();
 builder.Services.AddScoped<QuanLyHocTapBUS>();
 builder.Services.AddScoped<UserDao>();
