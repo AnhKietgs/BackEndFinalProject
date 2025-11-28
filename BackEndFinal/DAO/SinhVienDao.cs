@@ -105,5 +105,33 @@ namespace BackEndFinal.DAO
             _context.KyLuats.Add(kl);
             _context.SaveChanges();
         }
+
+        // Cập nhật thông tin sinh viên
+        public bool UpdateSinhVien(SinhVien svNew)
+        {
+            var svCurrent = _context.SinhViens.FirstOrDefault(s => s.MaSV == svNew.MaSV);
+
+            if (svCurrent == null)
+            {
+                return false;
+            }
+
+            svCurrent.HoTen = svNew.HoTen;
+            svCurrent.DiaChi = svNew.DiaChi;
+            svCurrent.GioiTinh = svNew.GioiTinh;
+            svCurrent.NgaySinh = svNew.NgaySinh;
+            svCurrent.SoDienThoai = svNew.SoDienThoai;
+
+            try
+            {
+                _context.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Không thể cập nhật thông tin sinh viên!" + ex.Message);
+            }
+        }
+
     }
 }

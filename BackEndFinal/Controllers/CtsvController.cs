@@ -111,5 +111,30 @@ namespace BackEndFinal.Controllers
             var list = _bus.LayDanhSachXetHocBong(hocKy, namHoc);
             return Ok(list);
         }
+
+        // API: PUT api/ctsv/update-student/
+        [HttpPut("update-student/{maSV}")]
+
+        public IActionResult CapNhatSinhVien([FromRoute] string maSV, [FromBody] CapNhatSinhVienDTO input)
+        {
+            try
+            {
+                var result = _bus.CapNhatSinhVien(maSV, input);
+                if (result)
+                {
+                    return Ok($"Cập nhật thông tin sinh viên thành công!");
+                }
+                else
+                {
+                    return NotFound(new { Message = $"Không tìm thấy sinh viên có mã {maSV}." });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
+
     }
 }

@@ -220,6 +220,28 @@ namespace BackEndFinal.BUS
 
             return danhSachXetDuyet;
         }
+
+        // hàm cập nhật thông tin sinh viên
+        public bool CapNhatSinhVien(string maSV, CapNhatSinhVienDTO input)
+        {
+            var svToUpdate = new SinhVien()
+            {
+                MaSV = maSV,
+                HoTen = input.HoTen,
+                NgaySinh = input.NgaySinh,
+                GioiTinh = input.GioiTinh,
+                DiaChi = input.DiaChi,
+                SoDienThoai = input.SoDienThoai,
+
+                // khởi tạo các thuộc tính quan hệ bắt buộc trong model SinhVien thành danh sách rỗng
+                KetQuaHocTaps = new List<KetQuaHocTap>(),
+                KyLuats = new List<KyLuat>()
+            };
+
+
+            return _dao.UpdateSinhVien(svToUpdate);
+        }
+
     }
 
 }
