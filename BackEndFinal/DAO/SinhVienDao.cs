@@ -109,7 +109,7 @@ namespace BackEndFinal.DAO
         // Cập nhật thông tin sinh viên
         public bool UpdateSinhVien(SinhVien svNew)
         {
-            var svCurrent = _context.SinhViens.FirstOrDefault(s => s.MaSV == svNew.MaSV);
+            var svCurrent = _context.SinhViens.FirstOrDefault(s => s.MaSV.Trim().ToUpper() == svNew.MaSV.Trim().ToUpper());
 
             if (svCurrent == null)
             {
@@ -132,6 +132,55 @@ namespace BackEndFinal.DAO
                 throw new Exception("Không thể cập nhật thông tin sinh viên!" + ex.Message);
             }
         }
+        public bool UpdateDiem(KetQuaHocTap diemNew)
+        {
+            var svCurrent = _context.KetQuaHocTaps.FirstOrDefault(s => s.MaSV.Trim().ToUpper() == diemNew.MaSV.Trim().ToUpper());
 
+            if (svCurrent == null)
+            {
+                return false;
+            }
+
+            svCurrent.HocKy = diemNew.HocKy;
+            svCurrent.NamHoc = diemNew.NamHoc;
+            svCurrent.GPA = diemNew.GPA;
+            svCurrent.DiemRenLuyen = diemNew.DiemRenLuyen;
+            svCurrent.XepLoaiHocLuc = diemNew.XepLoaiHocLuc;
+
+            try
+            {
+                _context.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Không thể cập nhật thông tin sinh viên!" + ex.Message);
+            }
+        }
+        public bool UpdateKyLuat(KyLuat KLNew)
+        {
+            var svCurrent = _context.KyLuats.FirstOrDefault(s => s.MaSV.Trim().ToUpper() == KLNew.MaSV.Trim().ToUpper());
+
+            if (svCurrent == null)
+            {
+                return false;
+            }
+
+            svCurrent.MaSV = KLNew.MaSV;
+            svCurrent.HocKy = KLNew.HocKy;
+            svCurrent.NamHoc = KLNew.NamHoc;
+            svCurrent.NoiDung = KLNew.NoiDung;
+            svCurrent.NgayQuyetDinh = KLNew.NgayQuyetDinh;
+
+            try
+            {
+                _context.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Không thể cập nhật thông tin sinh viên!" + ex.Message);
+            }
+        }
     }
 }

@@ -135,6 +135,47 @@ namespace BackEndFinal.Controllers
                 return BadRequest("Lỗi: " + ex.Message);
             }
         }
+        [HttpPut("update-diem/{maSV}")]
+        public IActionResult CapNhatDiem([FromRoute] string maSV, [FromBody] CapNhatDiemDTO input)
+        {
+            try
+            {
+                var result = _bus.CapNhatDiem(maSV, input);
+                if (result)
+                {
+                    return Ok($"Cập nhật điểm sinh viên thành công!");
+                }
+                else
+                {
+                    return NotFound(new { Message = $"Không tìm thấy sinh viên có mã {maSV}." });
+                }
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
+        [HttpPut("update-kyluat/{maSV}")]
+        public IActionResult CapNhatKyLuat([FromRoute] string maSV, [FromBody] CapNhatKyLuatDTO input)
+        {
+            try
+            {
+                var result = _bus.CapNhatKyLuat(maSV, input);
+                if (result)
+                {
+                    return Ok($"Cập nhật điểm sinh viên thành công!");
+                }
+                else
+                {
+                    return NotFound(new { Message = $"Không tìm thấy sinh viên có mã {maSV}." });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
     }
 }

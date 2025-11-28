@@ -146,7 +146,7 @@ namespace BackEndFinal.BUS
         }
         public KetQuaTraCuuDTO LayKetQuaHocTapTheoKy(string maSV, string hocKy, string namHoc)
         {
-            // 1. Lấy thông tin đầy đủ của sinh viên (bao gồm cả KetQuaHocTaps và KyLuats)
+            // Lấy thông tin đầy đủ của sinh viên (bao gồm cả KetQuaHocTaps và KyLuats)
             // Đảm bảo hàm GetSinhVienById trong DAO đã sử dụng .Include() để tải dữ liệu liên quan.
             var sv = _dao.GetSinhVienFullInfo(maSV);
             if (sv == null) throw new Exception("Không tìm thấy sinh viên");
@@ -160,9 +160,7 @@ namespace BackEndFinal.BUS
                 DanhSachKyLuat = new List<ChiTietKyLuatDTO>()
             };
 
-            // 3. Lọc điểm của học kỳ và năm học đó
-            // Sử dụng so sánh chính xác (==) thay vì Contains cho HocKy và NamHoc
-            // Kiểm tra null cho KetQuaHocTaps để tránh lỗi nếu sinh viên chưa có điểm nào
+          
             var diemCuaKy = sv.KetQuaHocTaps?.FirstOrDefault(k => k.HocKy.Trim() == hocKy.Trim() && k.NamHoc.Trim() == namHoc.Trim());
 
             if (diemCuaKy != null)
@@ -174,7 +172,7 @@ namespace BackEndFinal.BUS
                 // ketQuaDTO.XepLoaiHocLuc = diemCuaKy.XepLoaiHocLuc;
             }
 
-            // 4. Lọc danh sách kỷ luật của học kỳ và năm học đó
+            // Lọc danh sách kỷ luật của học kỳ và năm học đó
             // Kiểm tra null cho KyLuats
             if (sv.KyLuats != null)
             {
@@ -241,7 +239,35 @@ namespace BackEndFinal.BUS
 
             return _dao.UpdateSinhVien(svToUpdate);
         }
+        public bool CapNhatDiem(string maSV, CapNhatDiemDTO input)
+        {
+            var svToUpdate = new KetQuaHocTap()
+            {
+                MaSV = maSV,
+                HocKy = input.HocKy,
+                NamHoc= input.NamHoc,
+                GPA = input.GPA,
+                DiemRenLuyen = input.DiemRenLuyen,
+                XepLoaiHocBong = TinhXepLoaiHocBong(input.GPA, input.DiemRenLuyen),
+                XepLoaiHocLuc = TinhXeploaiHocLuc(input.GPA)
 
+            };
+
+            return _dao.UpdateDiem(svToUpdate);
+        }
+        public bool CapNhatKyLuat(string maSV, CapNhatKyLuatDTO input)
+        {
+            var svToUpdate = new KyLuat()
+            {
+                MaSV = maSV,
+                HocKy = input.HocKy,
+                NamHoc = input.NamHoc,
+                NoiDung = input.NoiDung,
+                NgayQuyetDinh= input.NgayQuyetDinh
+            };
+
+            return _dao.UpdateKyLuat(svToUpdate);
+        }
     }
 
 }
