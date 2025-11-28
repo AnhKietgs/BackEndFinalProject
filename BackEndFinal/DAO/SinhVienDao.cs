@@ -166,7 +166,6 @@ namespace BackEndFinal.DAO
                 return false;
             }
 
-            svCurrent.MaSV = KLNew.MaSV;
             svCurrent.HocKy = KLNew.HocKy;
             svCurrent.NamHoc = KLNew.NamHoc;
             svCurrent.NoiDung = KLNew.NoiDung;

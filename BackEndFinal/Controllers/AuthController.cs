@@ -2,7 +2,7 @@
 using BackEndFinal.DAO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using BackEndFinalEx.DTO;
 namespace BackEndFinal.Controllers
 {
     [Route("api/auth")]
@@ -17,7 +17,7 @@ namespace BackEndFinal.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDTO input)
+        public IActionResult Login([FromBody] LoginDto input)
         {
             // input.Username là MaSV, input.Password là SĐT
             var user = _bus.CheckLogin(input.Username, input.Password);
@@ -37,11 +37,4 @@ namespace BackEndFinal.Controllers
         }
     }
 
-    // Class DTO nhỏ để hứng dữ liệu login
-    
-    public class LoginDTO
-    {
-        public required string Username { get; set; }
-        public required string Password { get; set; }
-    }
 }

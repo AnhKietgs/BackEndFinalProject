@@ -164,7 +164,7 @@ namespace BackEndFinal.Controllers
                 var result = _bus.CapNhatKyLuat(maSV, input);
                 if (result)
                 {
-                    return Ok($"Cập nhật điểm sinh viên thành công!");
+                    return Ok($"Cập nhật kỷ luật của sinh viên thành công!");
                 }
                 else
                 {
