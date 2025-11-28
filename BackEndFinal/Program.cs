@@ -4,6 +4,8 @@ using BackEndFinal.BUS;
 using BackEndFinal.DAO;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Lấy PORT của Render, nếu không có thì mặc định 8080
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // Add services to the container.
@@ -28,7 +30,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
-app.UseAuthorization();
+
 
 
 builder.Services.AddScoped<SinhVienDao>();
@@ -43,7 +45,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+builder.Services.AddAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

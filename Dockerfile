@@ -6,10 +6,10 @@ COPY . .
 
 
 # Bây giờ chạy restore. Docker sẽ tự tìm file .csproj trong thư mục /src
-RUN dotnet restore
+RUN dotnet restore "BackEndFinal/BackEndFinalEx.csproj"
 
 # Build và Publish
-RUN dotnet publish -c Release -o /app/out
+RUN dotnet publish "BackEndFinal/BackEndFinalEx.csproj" -c Release -o /app/out
 
 # Stage 2: Run (Phần này giữ nguyên)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
