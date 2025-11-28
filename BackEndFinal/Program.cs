@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
                    .AllowAnyHeader(); // Cho phép mọi header
         });
 });
-var app = builder.Build();
+
 
 // ... các middleware khác ...
 
@@ -46,7 +46,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthorization();
-
+var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
