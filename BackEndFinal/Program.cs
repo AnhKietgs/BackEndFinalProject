@@ -5,52 +5,55 @@ using BackEndFinal.DAO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Lấy PORT của Render, nếu không có thì mặc định 8080
+// Lấy port Render cấp
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-// Add services to the container.
+
+// Add services
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
-// Thêm dịch vụ CORS
+
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()  // Cho phép mọi nguồn (máy tính của bạn) truy cập
-                   .AllowAnyMethod()  // Cho phép GET, POST, PUT, DELETE
-                   .AllowAnyHeader(); // Cho phép mọi header
-        });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
-
-// ... các middleware khác ...
-
+// DI
 builder.Services.AddScoped<SinhVienDao>();
 builder.Services.AddScoped<QuanLyHocTapBUS>();
 builder.Services.AddScoped<UserDao>();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Swagger (bật cả Production cho dễ test)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAuthorization();
 var app = builder.Build();
-app.UseHttpsRedirection();
-app.UseCors("AllowAll");
-// Configure the HTTP request pipeline.
+
+// KHÔNG bật HTTPS redirect trên Render
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+// Swagger UI (cho cả Production)
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 
