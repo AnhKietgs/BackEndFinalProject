@@ -1,4 +1,4 @@
-﻿namespace BackEndFinalEx.DTO
+﻿namespace BackEndFinalEx.DTO.DangNhapDTO
 {
     public class LoginDto
     {

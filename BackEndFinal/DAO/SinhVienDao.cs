@@ -44,6 +44,24 @@ namespace BackEndFinal.DAO
 
             return sinhVien;
         }
+        public List<SinhVien> GetSinhVienInfor()
+        {
+          
+            return _context.SinhViens.ToList();
+         
+        }
+        public List<KetQuaHocTap> GetSinhVienResult()
+        {
+
+            return _context.KetQuaHocTaps.ToList();
+
+        }
+        public List<KyLuat> GetSinhVienKyLuat()
+        {
+
+            return _context.KyLuats.ToList();
+
+        }
         public List<KetQuaHocTap> GetKetQuaByKy(string hocKy, string namHoc)
         {
             // _context là biến AppDbContext đã được khai báo trong DAO

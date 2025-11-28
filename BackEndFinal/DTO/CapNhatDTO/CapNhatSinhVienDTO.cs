@@ -1,14 +1,12 @@
-﻿using Microsoft.VisualBasic;
-
-namespace BackEndFinalEx.DTO
+﻿namespace BackEndFinalEx.DTO.CapNhatDTO
 {
-    public class ThongTinCaNhanDTO
+    public class CapNhatSinhVienDTO
     {
-        public required string MaSV { get; set; }
         public required string HoTen { get; set; }
         public required DateTime NgaySinh { get; set; } 
         public required string GioiTinh { get; set; }
         public required string DiaChi { get; set; }
         public required string SoDienThoai { get; set; }
+
     }
 }

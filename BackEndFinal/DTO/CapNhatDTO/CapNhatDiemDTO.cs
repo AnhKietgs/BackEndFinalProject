@@ -1,4 +1,4 @@
-﻿namespace BackEndFinalEx.DTO
+﻿namespace BackEndFinalEx.DTO.CapNhatDTO
 {
     public class CapNhatDiemDTO
     {

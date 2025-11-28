@@ -1,7 +1,9 @@
 ﻿using BackEndFinal.DAO;
-using BackEndFinal.DTO;
 using BackEndFinal.Model;
-using BackEndFinalEx.DTO;
+using BackEndFinalEx.DTO.CapNhatDTO;
+using BackEndFinalEx.DTO.DangNhapDTO;
+using BackEndFinalEx.DTO.ThemDTO;
+using BackEndFinalEx.DTO.XemDSachDTO;
 
 namespace BackEndFinal.BUS
 {
@@ -32,7 +34,7 @@ namespace BackEndFinal.BUS
                 return "Yếu";
         }
         // Hàm logic: Nhập điểm và Tự động xét học bổng
-        public void XuLyNhapDiem(NhapDiemDTO input)
+        public void XuLyNhapDiem(ThemDiemDTO input)
         {
 
             //  Tạo đối tượng Model để gửi xuống DAO
@@ -143,6 +145,52 @@ namespace BackEndFinal.BUS
                 DiaChi = sv.DiaChi,
                 SoDienThoai = sv.SoDienThoai
             };
+        }
+        public List<XemDachTTSVienDTO> LayThongTinCaNhan()
+        {
+            List<SinhVien> listEntity = _dao.GetSinhVienInfor(); // Gọi DAO lấy data gốc
+           
+            var listDto= listEntity.Select(sv => new XemDachTTSVienDTO
+            { 
+                MaSV=sv.MaSV,
+                HoTen=sv.HoTen,
+                NgaySinh=sv.NgaySinh,
+                GioiTinh=sv.GioiTinh,
+                DiaChi=sv.DiaChi,
+                SoDienThoai=sv.SoDienThoai
+            }).ToList();
+
+            return listDto;
+        }
+        public List<XemDSachDiemDTO> LayDiemCaNhan()
+        {
+            List<KetQuaHocTap> listEntity = _dao.GetSinhVienResult(); // Gọi DAO lấy data gốc
+
+            var listDto = listEntity.Select(sv => new XemDSachDiemDTO
+            {
+                MaSV = sv.MaSV,
+                HocKy = sv.HocKy,
+                NamHoc = sv.NamHoc,
+                GPA = sv.GPA,
+                DiemRenLuyen = sv.DiemRenLuyen,
+                XepLoaiHocLuc = sv.XepLoaiHocLuc
+            }).ToList();
+
+            return listDto;
+        }
+        public List<XemDSachKyLuatDTO> LayKyLuatCaNhan()
+        {
+            List<KyLuat> listEntity = _dao.GetSinhVienKyLuat();
+            var listDto = listEntity.Select(sv => new XemDSachKyLuatDTO
+            {
+                MaSV = sv.MaSV,
+                HocKy = sv.HocKy,
+                NamHoc = sv.NamHoc,
+                NoiDung = sv.NoiDung,
+                NgayQuyetDinh = sv.NgayQuyetDinh
+            }).ToList();
+
+            return listDto;
         }
         public KetQuaTraCuuDTO LayKetQuaHocTapTheoKy(string maSV, string hocKy, string namHoc)
         {

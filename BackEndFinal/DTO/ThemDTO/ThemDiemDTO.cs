@@ -1,6 +1,6 @@
-﻿namespace BackEndFinal.DTO
+﻿namespace BackEndFinalEx.DTO.ThemDTO
 {
-    public class NhapDiemDTO
+    public class ThemDiemDTO
     {
         public required string MaSV { get; set; }
         public required string HocKy { get; set; } // VD: "Học kỳ 1"

@@ -1,7 +1,7 @@
 ﻿using BackEndFinal.BUS;
-using BackEndFinal.DTO;
 using BackEndFinal.Model;
-using BackEndFinalEx.DTO;
+using BackEndFinalEx.DTO.CapNhatDTO;
+using BackEndFinalEx.DTO.ThemDTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndFinal.Controllers
@@ -52,7 +52,7 @@ namespace BackEndFinal.Controllers
 
         // API: POST api/ctsv/nhap-diem
         [HttpPost("nhap-diem")]
-        public IActionResult NhapDiem([FromBody] NhapDiemDTO input)
+        public IActionResult NhapDiem([FromBody] ThemDiemDTO input)
         {
             try
             {
@@ -175,6 +175,49 @@ namespace BackEndFinal.Controllers
             catch (Exception ex)
             {
                 return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
+        // GET: api/ctsv/danh-sach-sinh-vien
+        [HttpGet("danh-sach-sinh-vien")]
+        public IActionResult GetAllSinhVien()
+        {
+            try
+            {
+                // Gọi BUS để lấy danh sách DTO
+                var listData = _bus.LayThongTinCaNhan();
+                return Ok(listData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Lỗi server: " + ex.Message);
+            }
+        }
+        [HttpGet("danh-sach-diem-sinh-vien")]
+        public IActionResult GetAllAcademic()
+        {
+            try
+            {
+                // Gọi BUS để lấy danh sách DTO
+                var listData = _bus.LayDiemCaNhan();
+                return Ok(listData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Lỗi server: " + ex.Message);
+            }
+        }
+        [HttpGet("danh-sach-ky-luat-sinh-vien")]
+        public IActionResult GetAllKyLuat()
+        {
+            try
+            {
+                // Gọi BUS để lấy danh sách DTO
+                var listData = _bus.LayKyLuatCaNhan();
+                return Ok(listData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Lỗi server: " + ex.Message);
             }
         }
     }

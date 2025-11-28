@@ -1,8 +1,8 @@
-﻿using BackEndFinal.DTO;
+﻿
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
 
-namespace BackEndFinalEx.DTO
+namespace BackEndFinalEx.DTO.ThemDTO
 {
     public class ThemSinhVienDTO
     {

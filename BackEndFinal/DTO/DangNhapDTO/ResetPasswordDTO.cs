@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BackEndFinalEx.DTO
+namespace BackEndFinalEx.DTO.DangNhapDTO
 {
     public class ResetPasswordDTO
     {

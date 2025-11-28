@@ -2,7 +2,7 @@
 using BackEndFinal.DAO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using BackEndFinalEx.DTO;
+using BackEndFinalEx.DTO.DangNhapDTO;
 namespace BackEndFinal.Controllers
 {
     [Route("api/auth")]
