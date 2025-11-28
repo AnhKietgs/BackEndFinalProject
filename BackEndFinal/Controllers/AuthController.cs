@@ -35,6 +35,23 @@ namespace BackEndFinal.Controllers
                 maSV = user.Username // Trả về MaSV để Frontend dùng nó gọi API xem điểm
             });
         }
+        [HttpPost("reset-password")]
+        public IActionResult ResetPassword([FromBody] ResetPasswordDTO input)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                // Gọi BUS để xử lý
+                _bus.ResetPassword(input);
+                return Ok(new { message = "Lấy lại mật khẩu thành công! Vui lòng đăng nhập lại." });
+            }
+            catch (Exception ex)
+            {
+                // Trả về lỗi (ví dụ: SĐT không đúng)
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 
 }

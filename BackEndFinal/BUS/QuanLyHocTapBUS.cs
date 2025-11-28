@@ -268,6 +268,31 @@ namespace BackEndFinal.BUS
 
             return _dao.UpdateKyLuat(svToUpdate);
         }
+        public void ResetPassword(ResetPasswordDTO input)
+        {
+            // 1. Lấy thông tin sinh viên từ bảng SinhVien để kiểm tra SĐT
+            var sv = _dao.GetSinhVienFullInfo(input.MaSV);
+
+            if (sv == null)
+            {
+                throw new Exception("Mã sinh viên không tồn tại.");
+            }
+
+            // 2. So sánh SĐT nhập vào với SĐT trong hồ sơ (Bỏ khoảng trắng cho chắc ăn)
+            if (sv.SoDienThoai?.Trim() != input.SoDienThoaiXacThuc.Trim())
+            {
+                throw new Exception("Số điện thoại xác thực không chính xác!");
+            }
+
+            // 3. Nếu thông tin khớp, tiến hành cập nhật mật khẩu bên bảng User
+            bool isUpdated = _userDao.UpdatePassword(input.MaSV, input.MatKhauMoi);
+
+            if (!isUpdated)
+            {
+                // Trường hợp hiếm: Có trong bảng SV nhưng chưa có trong bảng User
+                throw new Exception("Tài khoản người dùng chưa được kích hoạt.");
+            }
+        }
     }
 
 }

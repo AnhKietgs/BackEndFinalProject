@@ -31,5 +31,17 @@ namespace BackEndFinal.DAO
         {
             return _context.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
         }
+        public bool UpdatePassword(string username, string newPassword)
+        {
+            var user = _context.Users.Find(username);
+            if (user == null) return false; // Không tìm thấy user
+
+            user.Password = newPassword; // Cập nhật mật khẩu mới
+                                         // LƯU Ý QUAN TRỌNG: Trong thực tế, ở đây BẮT BUỘC phải mã hóa (Hash) mật khẩu trước khi lưu.
+                                         // Nhưng để đơn giản cho đồ án hiện tại, mình tạm lưu plain text theo cách bạn đang làm.
+
+            _context.SaveChanges(); // Lưu xuống DB
+            return true;
+        }
     }
 }
