@@ -2,6 +2,7 @@
 using BackEndFinal.Model;
 using BackEndFinal.BUS;
 using BackEndFinal.DAO;
+using Microsoft.EntityFrameworkCore.Design;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ var connectionString =
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
+
 
 // CORS
 builder.Services.AddCors(options =>
