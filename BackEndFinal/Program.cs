@@ -2,37 +2,21 @@
 using BackEndFinal.Model;
 using BackEndFinal.BUS;
 using BackEndFinal.DAO;
+using Microsoft.EntityFrameworkCore.Design;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =========================================================
-// 1. QUAN TRỌNG: Cấu hình để lắng nghe trên PORT của Render
-// =========================================================
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Mặc định 8080 nếu không có biến PORT
-builder.WebHost.UseUrls($"http://*:{port}"); // Lắng nghe trên tất cả IP với port đó
-
-// =========================================================
-// 2. Xử lý Chuỗi kết nối Database
-// =========================================================
-// Lấy connection string từ cấu hình (tự động ưu tiên biến môi trường)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// Nếu là chuỗi từ Render (bắt đầu bằng postgresql://), cần sửa lại một chút
-if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgresql://"))
-{
-    connectionString = connectionString.Replace("postgresql://", "postgres://");
-}
+// Lấy port Render cấp
+var connectionString =
+    Environment.GetEnvironmentVariable("DefaultConnection")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Đăng ký DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 
-// =========================================================
-// 3. Các cấu hình khác (CORS, DI, JSON, Swagger) - Giữ nguyên
-// =========================================================
-
-// CORS: Cho phép tất cả (Cân nhắc giới hạn lại khi chạy thật)
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -74,11 +58,7 @@ if (app.Environment.IsDevelopment())
 
 // Swagger UI: Bật cho cả Production
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BackEndFinal API V1");
-    c.RoutePrefix = string.Empty; // Để Swagger làm trang chủ (tùy chọn)
-});
+app.UseSwaggerUI();
 
 // Kích hoạt CORS (Phải đặt trước Authorization)
 app.UseCors("AllowAll");
