@@ -2,6 +2,7 @@
 using BackEndFinal.Model;
 using BackEndFinalEx.DTO.CapNhatDTO;
 using BackEndFinalEx.DTO.ThemDTO;
+using BackEndFinalEx.DTO.XoaDTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndFinal.Controllers
@@ -88,20 +89,7 @@ namespace BackEndFinal.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        // API: DELETE api/ctsv/delete-student/SV01
-        [HttpDelete("delete-student/{maSV}")]
-        public IActionResult XoaSinhVien(string maSV)
-        {
-            try
-            {
-                _bus.XoaSinhVien(maSV); // Đã dùng BUS -> Chuẩn
-                return Ok($"Đã xóa thành công sinh viên {maSV}");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Lỗi: " + ex.Message);
-            }
-        }
+        
    
         // API: PUT api/ctsv/update-student/
         [HttpPut("update-student/{maSV}")]
@@ -221,5 +209,54 @@ namespace BackEndFinal.Controllers
             return Ok(list);
         }
 
+        // API: DELETE api/ctsv/delete-student/SV01
+        [HttpDelete("delete-student/{maSV}")]
+        public IActionResult XoaSinhVien(string maSV)
+        {
+            try
+            {
+                _bus.XoaSinhVien(maSV); // Đã dùng BUS -> Chuẩn
+                return Ok($"Đã xóa thành công sinh viên {maSV}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi: " + ex.Message);
+            }
+        }
+        [HttpDelete("Delete-scores")]
+        public IActionResult ClearScores([FromBody] XoaDiemDTO input)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                // Gọi BUS xử lý
+                bool isSuccess = _bus.XoaDiemSinhVien(input);
+
+                if (isSuccess)
+                {
+                    // 200 OK: Thành công
+                    return Ok(new { message = "Đã xóa điểm thành công (về trạng thái chưa nhập)." });
+                }
+                else
+                {
+                    // 404 Not Found: Không tìm thấy bản ghi để xóa
+                    return NotFound(new { message = "Không tìm thấy kết quả học tập này để xóa." });
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                // 400 Bad Request: Lỗi do input không hợp lệ từ BUS ném ra
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // 500 Internal Server Error: Lỗi hệ thống khác
+                return StatusCode(500, new { message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
     }
 }

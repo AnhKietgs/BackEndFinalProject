@@ -4,6 +4,7 @@ using BackEndFinalEx.DTO.CapNhatDTO;
 using BackEndFinalEx.DTO.DangNhapDTO;
 using BackEndFinalEx.DTO.ThemDTO;
 using BackEndFinalEx.DTO.XemDSachDTO;
+using BackEndFinalEx.DTO.XoaDTO;
 
 namespace BackEndFinal.BUS
 {
@@ -257,10 +258,10 @@ namespace BackEndFinal.BUS
                 {
                     MaSV = kq.MaSV,
                     NamHoc=kq.NamHoc,
-                    HocKy = hocKy,
+                    HocKy =kq.HocKy,
                     GPA = kq.GPA,
                     DiemRenLuyen = kq.DiemRenLuyen,
-                    XepLoaiHocBong = kq.XepLoaiHocBong
+                    XepLoaiHocBong = TinhXepLoaiHocBong(kq.GPA,kq.DiemRenLuyen)
                 })
                 .OrderByDescending(x => x.GPA) // Sắp xếp điểm từ cao xuống thấp cho đẹp
                 .ToList();
@@ -341,6 +342,23 @@ namespace BackEndFinal.BUS
                 // Trường hợp hiếm: Có trong bảng SV nhưng chưa có trong bảng User
                 throw new Exception("Tài khoản người dùng chưa được kích hoạt.");
             }
+        }
+
+
+        public bool XoaDiemSinhVien(XoaDiemDTO input)
+        {
+            // 1. Validate dữ liệu đầu vào (Validate nghiệp vụ)
+            if (string.IsNullOrWhiteSpace(input.MaSV) ||
+                string.IsNullOrWhiteSpace(input.HocKy) ||
+                string.IsNullOrWhiteSpace(input.NamHoc))
+            {
+                // Ném lỗi để Controller bắt và trả về 400 Bad Request
+                throw new ArgumentException("Mã SV, Học kỳ và Năm học không được để trống.");
+            }
+
+            // 2. Gọi DAO để thực hiện cập nhật
+            // Sử dụng Trim() để đảm bảo chính xác khi tìm kiếm
+            return _dao.SetScoresToNull(input.MaSV.Trim(), input.HocKy.Trim(), input.NamHoc.Trim());
         }
     }
 

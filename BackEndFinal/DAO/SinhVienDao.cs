@@ -68,8 +68,7 @@ namespace BackEndFinal.DAO
         {
             // _context là biến AppDbContext đã được khai báo trong DAO
             return _context.KetQuaHocTaps
-                           // QUAN TRỌNG: Lệnh này báo cho EF Core biết hãy JOIN bảng SinhVien
-                           // để lấy luôn thông tin Họ tên, Lớp... đi kèm kết quả đó.
+                           
                            .Include(k => k.SinhVien)
 
                            // Lọc theo đúng kỳ và năm được yêu cầu
@@ -120,6 +119,7 @@ namespace BackEndFinal.DAO
             }
         }
         // Thêm kỷ luật
+
         public void AddKyLuat(KyLuat kl)
         {
             _context.KyLuats.Add(kl);
@@ -200,6 +200,34 @@ namespace BackEndFinal.DAO
             {
                 throw new Exception("Không thể cập nhật thông tin sinh viên!" + ex.Message);
             }
+        }
+
+
+        public bool SetScoresToNull(string maSV, string hocKy, string namHoc)
+        {
+            // 1. Tìm bản ghi dựa trên khóa chính phức hợp
+            var ketQuaEntity = _context.KetQuaHocTaps
+                .FirstOrDefault(k => k.MaSV.Trim().ToLower() == maSV.Trim().ToLower() && k.HocKy == hocKy && k.NamHoc == namHoc);
+
+            // 2. Nếu không tìm thấy -> Trả về false
+            if (ketQuaEntity == null)
+            {
+                return false;
+            }
+
+            // Nếu tìm thấy -> Gán các trường liên quan đến điểm về NULL
+            // (Điều này chỉ hoạt động nếu Model đã khai báo là kiểu nullable như int?, double?)
+            ketQuaEntity.GPA = 0;
+            ketQuaEntity.DiemRenLuyen = 0;
+
+            // Quan trọng: Reset luôn các xếp loại để đảm bảo nhất quán
+            ketQuaEntity.XepLoaiHocLuc = "";
+            ketQuaEntity.XepLoaiHocBong = "";
+
+            // Lưu thay đổi xuống DB
+            _context.SaveChanges();
+
+            return true;
         }
     }
 }
