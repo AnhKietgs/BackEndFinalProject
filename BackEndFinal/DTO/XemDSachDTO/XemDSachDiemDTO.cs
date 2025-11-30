@@ -3,6 +3,8 @@
     public class XemDSachDiemDTO
     {
         public required string MaSV { get; set; }
+
+        public required string HoTen { get; set; }
         public required string HocKy { get; set; }
         public required string NamHoc { get; set; }
 

@@ -53,7 +53,9 @@ namespace BackEndFinal.DAO
         public List<KetQuaHocTap> GetSinhVienResult()
         {
 
-            return _context.KetQuaHocTaps.ToList();
+            return _context.KetQuaHocTaps
+                .Include(k=>k.SinhVien)
+                .ToList();
 
         }
         public List<KyLuat> GetSinhVienKyLuat()
@@ -164,7 +166,7 @@ namespace BackEndFinal.DAO
             svCurrent.GPA = diemNew.GPA;
             svCurrent.DiemRenLuyen = diemNew.DiemRenLuyen;
             svCurrent.XepLoaiHocLuc = diemNew.XepLoaiHocLuc;
-
+            svCurrent.XepLoaiHocBong= diemNew.XepLoaiHocBong;
             try
             {
                 _context.SaveChanges();

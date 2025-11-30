@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BackEndFinal.Model
 {
@@ -15,6 +17,6 @@ namespace BackEndFinal.Model
         public required string XepLoaiHocBong { get; set; } // "Xuất sắc", "Giỏi", "Khá", "Không"
 
         [ForeignKey("MaSV")]
-        public  SinhVien? SinhVien { get; set; }
+        public virtual SinhVien? SinhVien { get; set; }
     }
 }

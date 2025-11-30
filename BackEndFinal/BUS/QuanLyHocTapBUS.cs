@@ -165,15 +165,17 @@ namespace BackEndFinal.BUS
         public List<XemDSachDiemDTO> LayDiemCaNhan()
         {
             List<KetQuaHocTap> listEntity = _dao.GetSinhVienResult(); // Gọi DAO lấy data gốc
-
-            var listDto = listEntity.Select(sv => new XemDSachDiemDTO
+            
+           
+            var listDto = listEntity.Select( sv => new XemDSachDiemDTO
             {
                 MaSV = sv.MaSV,
                 HocKy = sv.HocKy,
                 NamHoc = sv.NamHoc,
                 GPA = sv.GPA,
                 DiemRenLuyen = sv.DiemRenLuyen,
-                XepLoaiHocLuc = sv.XepLoaiHocLuc
+                XepLoaiHocLuc = sv.XepLoaiHocLuc,
+                HoTen = sv.SinhVien?.HoTen??""
             }).ToList();
 
             return listDto;
@@ -216,8 +218,7 @@ namespace BackEndFinal.BUS
                 ketQuaDTO.GPA = diemCuaKy.GPA;
                 ketQuaDTO.DiemRenLuyen = diemCuaKy.DiemRenLuyen;
                 ketQuaDTO.XepLoaiHocBong = diemCuaKy.XepLoaiHocBong;
-                // Nếu DTO có trường XepLoaiHocLuc thì gán thêm vào đây
-                // ketQuaDTO.XepLoaiHocLuc = diemCuaKy.XepLoaiHocLuc;
+                ketQuaDTO.XepLoaiHocLuc = diemCuaKy.XepLoaiHocLuc;
             }
 
             // Lọc danh sách kỷ luật của học kỳ và năm học đó

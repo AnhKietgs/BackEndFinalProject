@@ -9,6 +9,7 @@
             // Phần Kết quả học tập
             public double? GPA { get; set; } // Dùng double? để cho phép null nếu chưa có điểm
             public int? DiemRenLuyen { get; set; }
+            public string? XepLoaiHocLuc { get; set; }
             public  string? XepLoaiHocBong { get; set; }
 
             // Phần Kỷ luật (Danh sách nội dung kỷ luật trong kỳ đó)
