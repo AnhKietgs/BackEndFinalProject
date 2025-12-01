@@ -4,7 +4,7 @@ using BackEndFinalEx.DTO.CapNhatDTO;
 using BackEndFinalEx.DTO.DangNhapDTO;
 using BackEndFinalEx.DTO.ThemDTO;
 using BackEndFinalEx.DTO.XemDSachDTO;
-using BackEndFinalEx.DTO.XoaDTO;
+
 
 namespace BackEndFinal.BUS
 {
@@ -189,7 +189,7 @@ namespace BackEndFinal.BUS
                 MaSV = sv.MaSV,
                 HocKy = sv.HocKy,
                 NamHoc = sv.NamHoc,
-                NoiDung = sv.NoiDung,
+                HinhThuc = sv.HinhThuc,
                 NgayQuyetDinh = sv.NgayQuyetDinh
             }).ToList();
 
@@ -234,7 +234,7 @@ namespace BackEndFinal.BUS
                 {
                     ketQuaDTO.DanhSachKyLuat = kyLuatCuaKy.Select(kl => new ChiTietKyLuatDTO
                     {
-                        NoiDung = kl.NoiDung,
+                        HinhThuc = kl.HinhThuc,
                         // Định dạng ngày tháng năm
                         NgayQuyetDinh = kl.NgayQuyetDinh.ToString("dd/MM/yyyy")
                     }).ToList();
@@ -310,9 +310,10 @@ namespace BackEndFinal.BUS
             var svToUpdate = new KyLuat()
             {
                 MaSV = maSV,
+                LyDo=input.LyDo,
                 HocKy = input.HocKy,
                 NamHoc = input.NamHoc,
-                NoiDung = input.NoiDung,
+                HinhThuc = input.HinhThuc,
                 NgayQuyetDinh= input.NgayQuyetDinh
             };
 
@@ -344,21 +345,27 @@ namespace BackEndFinal.BUS
             }
         }
 
-
-        public bool XoaDiemSinhVien(XoaDiemDTO input)
+        public bool XoaKyLuat(int id)
         {
-            // 1. Validate dữ liệu đầu vào (Validate nghiệp vụ)
-            if (string.IsNullOrWhiteSpace(input.MaSV) ||
-                string.IsNullOrWhiteSpace(input.HocKy) ||
-                string.IsNullOrWhiteSpace(input.NamHoc))
+            // Kiểm tra tính hợp lệ của ID (ví dụ: ID phải là số dương)
+            if (id <= 0)
             {
-                // Ném lỗi để Controller bắt và trả về 400 Bad Request
-                throw new ArgumentException("Mã SV, Học kỳ và Năm học không được để trống.");
+                throw new ArgumentException("ID kỷ luật không hợp lệ. ID phải lớn hơn 0.");
             }
 
-            // 2. Gọi DAO để thực hiện cập nhật
-            // Sử dụng Trim() để đảm bảo chính xác khi tìm kiếm
-            return _dao.SetScoresToNull(input.MaSV.Trim(), input.HocKy.Trim(), input.NamHoc.Trim());
+            // Gọi xuống tầng DAO để thực hiện thao tác xóa
+            return _dao.DeleteKyLuatById(id);
+        }
+        public bool XoaDiemTheoId(int id)
+        {
+            // Validate ID hợp lệ (ID trong DB thường bắt đầu từ 1)
+            if (id <= 0)
+            {
+                throw new ArgumentException("ID bảng điểm không hợp lệ.");
+            }
+
+            // Gọi DAO để thực hiện xóa
+            return _dao.DeleteScoreById(id);
         }
     }
 

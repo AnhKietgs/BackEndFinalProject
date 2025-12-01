@@ -19,7 +19,7 @@
         // DTO con để hiện thị chi tiết kỷ luật cho gọn
         public class ChiTietKyLuatDTO
         {
-            public required string NoiDung { get; set; }
+            public required string HinhThuc { get; set; }
             public required string NgayQuyetDinh { get; set; }
         }
     

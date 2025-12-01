@@ -188,7 +188,7 @@ namespace BackEndFinal.DAO
 
             svCurrent.HocKy = KLNew.HocKy;
             svCurrent.NamHoc = KLNew.NamHoc;
-            svCurrent.NoiDung = KLNew.NoiDung;
+            svCurrent.HinhThuc = KLNew.HinhThuc;
             svCurrent.NgayQuyetDinh = KLNew.NgayQuyetDinh;
 
             try
@@ -202,12 +202,33 @@ namespace BackEndFinal.DAO
             }
         }
 
-
-        public bool SetScoresToNull(string maSV, string hocKy, string namHoc)
+        public bool DeleteKyLuatById(int id)
         {
-            // 1. Tìm bản ghi dựa trên khóa chính phức hợp
-            var ketQuaEntity = _context.KetQuaHocTaps
-                .FirstOrDefault(k => k.MaSV.Trim().ToLower() == maSV.Trim().ToLower() && k.HocKy == hocKy && k.NamHoc == namHoc);
+            // 1. Tìm bản ghi cần xóa trong DB theo khóa chính
+            // Phương thức .Find() rất hiệu quả cho việc này.
+            var kyLuatEntity = _context.KyLuats.Find(id);
+
+            // 2. Nếu không tìm thấy bản ghi -> Trả về false
+            if (kyLuatEntity == null)
+            {
+                return false;
+            }
+
+            // 3. Nếu tìm thấy -> Đánh dấu bản ghi để xóa
+            _context.KyLuats.Remove(kyLuatEntity);
+
+            // 4. Thực hiện lệnh commit thay đổi xuống database
+            // SaveChanges() trả về số lượng dòng bị ảnh hưởng.
+            int rowsAffected = _context.SaveChanges();
+
+            // Nếu có ít nhất 1 dòng bị ảnh hưởng, nghĩa là xóa thành công.
+            return rowsAffected > 0;
+        }
+        public bool DeleteScoreById(int id)
+        {
+            // 1. Tìm bản ghi cần xóa trong DB theo khóa chính ID
+            // Hàm .Find() rất hiệu quả để tìm theo primary key
+            var ketQuaEntity = _context.KetQuaHocTaps.Find(id);
 
             // 2. Nếu không tìm thấy -> Trả về false
             if (ketQuaEntity == null)
@@ -215,19 +236,14 @@ namespace BackEndFinal.DAO
                 return false;
             }
 
-            // Nếu tìm thấy -> Gán các trường liên quan đến điểm về NULL
-            // (Điều này chỉ hoạt động nếu Model đã khai báo là kiểu nullable như int?, double?)
-            ketQuaEntity.GPA = 0;
-            ketQuaEntity.DiemRenLuyen = 0;
+            // 3. Nếu tìm thấy -> Đánh dấu để xóa
+            _context.KetQuaHocTaps.Remove(ketQuaEntity);
 
-            // Quan trọng: Reset luôn các xếp loại để đảm bảo nhất quán
-            ketQuaEntity.XepLoaiHocLuc = "";
-            ketQuaEntity.XepLoaiHocBong = "";
+            // 4. Thực hiện lệnh xóa xuống DB
+            int rowsAffected = _context.SaveChanges();
 
-            // Lưu thay đổi xuống DB
-            _context.SaveChanges();
-
-            return true;
+            // Trả về true nếu có ít nhất 1 dòng bị ảnh hưởng
+            return rowsAffected > 0;
         }
     }
 }

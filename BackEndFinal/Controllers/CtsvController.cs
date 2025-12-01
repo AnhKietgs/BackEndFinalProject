@@ -2,7 +2,7 @@
 using BackEndFinal.Model;
 using BackEndFinalEx.DTO.CapNhatDTO;
 using BackEndFinalEx.DTO.ThemDTO;
-using BackEndFinalEx.DTO.XoaDTO;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEndFinal.Controllers
@@ -73,7 +73,8 @@ namespace BackEndFinal.Controllers
             var kyLuatEntity = new KyLuat
             {
                 MaSV = input.MaSV,
-                NoiDung = input.NoiDung,
+                LyDo = input.LyDo,
+                HinhThuc = input.HinhThuc,
                 NgayQuyetDinh = input.NgayQuyetDinh,
                 // MAPPING THÊM 2 TRƯỜNG MỚI
                 HocKy = input.HocKy,
@@ -223,33 +224,62 @@ namespace BackEndFinal.Controllers
                 return BadRequest("Lỗi: " + ex.Message);
             }
         }
-        [HttpDelete("Delete-scores")]
-        public IActionResult ClearScores([FromBody] XoaDiemDTO input)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
+        [HttpDelete("ky-luat/{id}")]
+        public IActionResult DeleteKyLuat(int id)
+        {
             try
             {
-                // Gọi BUS xử lý
-                bool isSuccess = _bus.XoaDiemSinhVien(input);
+                // Gọi lớp BUS để xử lý yêu cầu xóa
+                bool isDeleted = _bus.XoaKyLuat(id);
 
-                if (isSuccess)
+                if (isDeleted)
                 {
-                    // 200 OK: Thành công
-                    return Ok(new { message = "Đã xóa điểm thành công (về trạng thái chưa nhập)." });
+                    // Nếu xóa thành công, trả về mã 200 OK kèm thông báo.
+                    // Bạn cũng có thể trả về 204 No Content nếu không muốn gửi body.
+                    return Ok(new { message = $"Đã xóa thành công kỷ luật có ID: {id}" });
                 }
                 else
                 {
-                    // 404 Not Found: Không tìm thấy bản ghi để xóa
-                    return NotFound(new { message = "Không tìm thấy kết quả học tập này để xóa." });
+                    // Nếu không tìm thấy ID để xóa, trả về mã 404 Not Found.
+                    return NotFound(new { message = $"Không tìm thấy bản ghi kỷ luật nào với ID: {id}" });
                 }
             }
             catch (ArgumentException ex)
             {
-                // 400 Bad Request: Lỗi do input không hợp lệ từ BUS ném ra
+                // Nếu lỗi do dữ liệu đầu vào không hợp lệ (từ BUS ném ra), trả về 400 Bad Request.
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Nếu có lỗi hệ thống không mong muốn, trả về 500 Internal Server Error.
+                // Ghi log lỗi ở đây trong ứng dụng thực tế.
+                return StatusCode(500, new { message = "Đã xảy ra lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        [HttpDelete("diem/{id}")]
+        public IActionResult DeleteDiem(int id)
+        {
+            try
+            {
+                // Gọi BUS xử lý
+                bool isDeleted = _bus.XoaDiemTheoId(id);
+
+                if (isDeleted)
+                {
+                    // 200 OK: Xóa thành công
+                    return Ok(new { message = $"Đã xóa vĩnh viễn bản ghi điểm có ID: {id}" });
+                }
+                else
+                {
+                    // 404 Not Found: Không tìm thấy ID đó trong DB
+                    return NotFound(new { message = $"Không tìm thấy bản ghi điểm với ID: {id}" });
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                // 400 Bad Request: Lỗi do ID không hợp lệ
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)

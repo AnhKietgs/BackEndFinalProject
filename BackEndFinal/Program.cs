@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Design;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Lấy port Render cấp
 var connectionString =
     Environment.GetEnvironmentVariable("DefaultConnection")
@@ -49,7 +50,22 @@ builder.Services.AddSwaggerGen();
 // 4. Xây dựng ứng dụng và cấu hình Pipeline
 // =========================================================
 var app = builder.Build();
-
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>(); // Thay AppDbContext bằng tên DbContext của bạn
+        context.Database.Migrate(); // Lệnh này sẽ áp dụng các migration chưa chạy
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Đã xảy ra lỗi khi cập nhật cơ sở dữ liệu.");
+        // Bạn có thể quyết định dừng ứng dụng nếu lỗi migration nghiêm trọng
+        // throw; 
+    }
+}
 // HTTPS Redirection: Chỉ bật ở Development (tránh lỗi trên Render)
 if (app.Environment.IsDevelopment())
 {

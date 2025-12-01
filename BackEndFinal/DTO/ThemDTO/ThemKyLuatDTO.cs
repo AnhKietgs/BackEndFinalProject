@@ -8,8 +8,9 @@ namespace BackEndFinalEx.DTO.ThemDTO
         public required string MaSV { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập nội dung kỷ luật")]
-        public required string NoiDung { get; set; }
+        public required string HinhThuc { get; set; }
 
+        public required string LyDo { get; set; }
         public DateTime NgayQuyetDinh { get; set; }
 
         // --- THÊM 2 TRƯỜNG MỚI ---
