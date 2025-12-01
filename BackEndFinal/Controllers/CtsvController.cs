@@ -66,8 +66,8 @@ namespace BackEndFinal.Controllers
             }
         }
 
-        // API: POST api/ctsv/ky-luat
-        [HttpPost("ky-luat")]
+        // API: POST api/ctsv/nhap-ky-luat
+        [HttpPost("nhap-ky-luat")]
         public IActionResult ThemKyLuat([FromBody] ThemKyLuatDTO input)
         {
             var kyLuatEntity = new KyLuat

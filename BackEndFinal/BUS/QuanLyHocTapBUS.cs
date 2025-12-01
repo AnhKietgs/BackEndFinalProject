@@ -188,6 +188,7 @@ namespace BackEndFinal.BUS
             {
                 MaSV = sv.MaSV,
                 HocKy = sv.HocKy,
+                LyDo=sv.LyDo,
                 NamHoc = sv.NamHoc,
                 HinhThuc = sv.HinhThuc,
                 NgayQuyetDinh = sv.NgayQuyetDinh
