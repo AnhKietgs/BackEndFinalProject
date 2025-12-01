@@ -153,6 +153,7 @@ namespace BackEndFinal.BUS
            
             var listDto= listEntity.Select(sv => new XemDachTTSVienDTO
             { 
+                
                 MaSV=sv.MaSV,
                 HoTen=sv.HoTen,
                 NgaySinh=sv.NgaySinh,
@@ -186,6 +187,7 @@ namespace BackEndFinal.BUS
             List<KyLuat> listEntity = _dao.GetSinhVienKyLuat();
             var listDto = listEntity.Select(sv => new XemDSachKyLuatDTO
             {
+                Id = sv.Id,
                 MaSV = sv.MaSV,
                 HocKy = sv.HocKy,
                 LyDo=sv.LyDo,

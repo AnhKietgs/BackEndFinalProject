@@ -2,6 +2,7 @@
 {
     public class XemDSachKyLuatDTO
     {
+        public int Id { get; set; }
         public required string MaSV { get; set; }
         public required string HinhThuc { get; set; }
         public required string LyDo { get; set; }

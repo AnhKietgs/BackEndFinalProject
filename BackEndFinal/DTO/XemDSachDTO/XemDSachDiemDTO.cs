@@ -2,6 +2,7 @@
 {
     public class XemDSachDiemDTO
     {
+        public int Id { get; set; }
         public required string MaSV { get; set; }
 
         public required string HoTen { get; set; }
