@@ -20,7 +20,8 @@
         public class ChiTietKyLuatDTO
         {
             public required string HinhThuc { get; set; }
-            public required string NgayQuyetDinh { get; set; }
-        }
+            public required DateTime NgayQuyetDinh { get; set; }
+            public required string LyDo { get; set; }
+    }
     
 }

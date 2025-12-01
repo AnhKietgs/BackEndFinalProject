@@ -237,9 +237,9 @@ namespace BackEndFinal.BUS
                 {
                     ketQuaDTO.DanhSachKyLuat = kyLuatCuaKy.Select(kl => new ChiTietKyLuatDTO
                     {
+                        LyDo=kl.LyDo,
                         HinhThuc = kl.HinhThuc,
-                        // Định dạng ngày tháng năm
-                        NgayQuyetDinh = kl.NgayQuyetDinh.ToString("dd/MM/yyyy")
+                        NgayQuyetDinh = kl.NgayQuyetDinh
                     }).ToList();
                 }
             }
