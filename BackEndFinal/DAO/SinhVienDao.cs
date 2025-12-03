@@ -61,7 +61,9 @@ namespace BackEndFinal.DAO
         public List<KyLuat> GetSinhVienKyLuat()
         {
 
-            return _context.KyLuats.ToList();
+            return _context.KyLuats
+                .Include(k => k.SinhVien)
+                .ToList();
 
         }
         public List<KetQuaHocTap> GetKetQuaByKy(string hocKy, string namHoc)
