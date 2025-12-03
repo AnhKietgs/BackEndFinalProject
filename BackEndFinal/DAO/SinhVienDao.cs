@@ -187,7 +187,7 @@ namespace BackEndFinal.DAO
             {
                 return false;
             }
-
+            svCurrent.LyDo=KLNew.LyDo;
             svCurrent.HocKy = KLNew.HocKy;
             svCurrent.NamHoc = KLNew.NamHoc;
             svCurrent.HinhThuc = KLNew.HinhThuc;

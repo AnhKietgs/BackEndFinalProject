@@ -313,6 +313,7 @@ namespace BackEndFinal.BUS
         {
             var svToUpdate = new KyLuat()
             {
+
                 MaSV = maSV,
                 LyDo=input.LyDo,
                 HocKy = input.HocKy,
