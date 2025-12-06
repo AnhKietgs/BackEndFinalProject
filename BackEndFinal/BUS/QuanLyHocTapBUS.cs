@@ -10,14 +10,16 @@ namespace BackEndFinal.BUS
 {
     public class QuanLyHocTapBUS
     {
-        private readonly SinhVienDao _dao;
-        private readonly UserDao _userDao;
+        private readonly SinhVienDao _dao;//readonly nghĩa là:Chỉ được gán giá trị trong constructor,
+                                          //Không ai có thể đổi sang một instance khác khi class đang hoạt động.
+        private readonly UserDao _userDao;//Tránh lỗi thay đổi giữa chừng
+                                          //An toàn hơn khi nhiều phương thức dùng chung 1 context
+                                          //Đảm bảo đúng nguyên tắc DI(Dependency Injection)
         public QuanLyHocTapBUS(SinhVienDao dao, UserDao userDao)
         {
             _dao = dao;
             _userDao = userDao;
         }
-        // Hàm phụ trợ: Tự động tính xếp loại dựa trên GPA và ĐRL
         private string TinhXepLoaiHocBong(double gpa, int diemRenLuyen)
         {
             if (gpa >= 3.6 && diemRenLuyen >= 90) return "Xuất sắc";
@@ -34,7 +36,6 @@ namespace BackEndFinal.BUS
             if (gpa >= 2.0) return "Trung bình";
                 return "Yếu";
         }
-        // Hàm logic: Nhập điểm và Tự động xét học bổng
         public void XuLyNhapDiem(ThemDiemDTO input)
         {
 
@@ -54,58 +55,71 @@ namespace BackEndFinal.BUS
             _dao.SaveKetQua(ketQua);
         }
 
-        public void ThemSinhVienMoi(SinhVien sv)
+        public void ThemSinhVienMoi(ThemSinhVienDTO input)
         {
-          
-            // Khởi tạo Transaction
+            // Chuẩn hóa ngày sinh
+            DateTime ngaySinhUtc = input.NgaySinh.Kind == DateTimeKind.Utc
+                ? input.NgaySinh
+                : DateTime.SpecifyKind(input.NgaySinh, DateTimeKind.Utc);
+
+            // Mapping từ DTO → Entity
+            var sv = new SinhVien
+            {
+                MaSV = input.MaSV,
+                HoTen = input.HoTen,
+                SoDienThoai = input.SoDienThoai,
+                DiaChi = input.DiaChi,
+                NgaySinh = ngaySinhUtc,
+                GioiTinh = input.GioiTinh,
+                KetQuaHocTaps = new List<KetQuaHocTap>(),
+                KyLuats = new List<KyLuat>()
+            };
+
+            // Transaction đảm bảo toàn vẹn dữ liệu
             using (var transaction = _dao._context.Database.BeginTransaction())
             {
-                var KtSinhVien = _dao.GetSinhVienFullInfo(sv.MaSV);
-                if (KtSinhVien != null)
-                {
-                    // Nếu đã có thì ném ra lỗi để Controller bắt được và báo cho người dùng
-                    throw new Exception($"Sinh viên có mã {sv.MaSV} đã tồn tại trong hệ thống!");
-                }
+                var existed = _dao.GetSinhVienFullInfo(sv.MaSV);
+                if (existed != null)
+                    throw new Exception($"Sinh viên {sv.MaSV} đã tồn tại!");
+
                 try
                 {
-                    //Thêm User
+                    // Tạo user
                     var newUser = new User
                     {
                         Username = sv.MaSV,
                         Password = sv.SoDienThoai,
                         Role = "SinhVien"
                     };
+
                     _userDao.AddUser(newUser);
                     _dao.AddSinhVien(sv);
-                    //  Nếu cả 2 bước trên đều ngon lành thì mới Lưu thật (Commit)
+
                     transaction.Commit();
                 }
                 catch (Exception ex)
                 {
-                    // Nếu có lỗi ở bất kỳ bước nào -> Hoàn tác lại tất cả (Rollback)
-                    // Sinh viên vừa thêm cũng sẽ bị gỡ bỏ, database sạch sẽ.
                     transaction.Rollback();
                     throw new Exception("Lỗi thêm sinh viên: " + ex.Message);
                 }
             }
-            
         }
+
 
         public void XoaSinhVien(string maSV)
         {
-            // Bắt đầu một giao dịch
-            // Lưu ý: Cần đảm bảo _svDao._context là public hoặc có property truy cập
+            
             using (var transaction = _dao._context.Database.BeginTransaction())
             {
                 try
                 {
-                    // 1. Xóa User
+                    // Xóa User
                     _userDao.DeleteUser(maSV);
 
-                    // 2. Xóa Sinh viên
+                    // Xóa Sinh viên
                     _dao.DeleteSinhVien(maSV);
 
-                    // 3. Nếu cả 2 lệnh trên trôi chảy thì mới Lưu thật (Commit)
+                    // Nếu cả 2 lệnh trên trôi chảy thì mới Lưu thật (Commit)
                     transaction.Commit();
                 }
                 catch (Exception ex)
@@ -124,17 +138,23 @@ namespace BackEndFinal.BUS
             // BUS gọi xuống DAO để kiểm tra
             return _userDao.CheckLogin(username, password);
         }
-        // Trong file QuanLyHocTapBUS.cs
-        public void ThemKyLuat(KyLuat kl)
+        public void ThemKyLuat(ThemKyLuatDTO kl)
         {
-            // Gọi xuống DAO (để Controller không phải gọi trực tiếp)
-            _dao.AddKyLuat(kl);
-            // (Lưu ý: Bạn phải đảm bảo _dao ở đây là SinhVienDAO và nó có hàm AddKyLuat)
+            var kyLuat = new KyLuat
+            {
+                MaSV = kl.MaSV,
+                LyDo = kl.LyDo,
+                HinhThuc = kl.HinhThuc,
+                NgayQuyetDinh = kl.NgayQuyetDinh,
+                HocKy = kl.HocKy,
+                NamHoc = kl.NamHoc
+            };
+            _dao.AddKyLuat(kyLuat);
         }
         public ThongTinCaNhanDTO? LayThongTinCaNhan(string maSV)
         {
             var sv = _dao.GetSinhVienBasicInfor(maSV); // Gọi DAO lấy data gốc
-            if (sv == null) return null;
+            if (sv == null) return null;//ktra
 
             // Map sang DTO thông tin cá nhân
             return new ThongTinCaNhanDTO
@@ -151,7 +171,7 @@ namespace BackEndFinal.BUS
         {
             List<SinhVien> listEntity = _dao.GetSinhVienInfor(); // Gọi DAO lấy data gốc
            
-            var listDto= listEntity.Select(sv => new XemDachTTSVienDTO
+            var listDto= listEntity.Select(sv => new XemDachTTSVienDTO//dùng để map từng SinhVien thành một object kiểu XemDachTTSVienDTO.
             { 
                 
                 MaSV=sv.MaSV,
@@ -171,7 +191,7 @@ namespace BackEndFinal.BUS
             List<KetQuaHocTap> listEntity = _dao.GetSinhVienResult(); // Gọi DAO lấy data gốc
 
 
-            var listDto = listEntity.Select(sv => new XemDSachDiemDTO
+            var listDto = listEntity.Select(sv => new XemDSachDiemDTO//dùng để map từng SinhVien thành một object kiểu XemDachTTSVienDTO.
             {
                 Id = sv.Id,
                 MaSV = sv.MaSV,
@@ -206,12 +226,11 @@ namespace BackEndFinal.BUS
         }
         public KetQuaTraCuuDTO LayKetQuaHocTapTheoKy(string maSV, string hocKy, string namHoc)
         {
-            // Lấy thông tin đầy đủ của sinh viên (bao gồm cả KetQuaHocTaps và KyLuats)
-            // Đảm bảo hàm GetSinhVienById trong DAO đã sử dụng .Include() để tải dữ liệu liên quan.
+            // Lấy thông tin đầy đủ của sinh viên (bao gồm cả KetQuaHocTaps và KyLuats
             var sv = _dao.GetSinhVienFullInfo(maSV);
-            if (sv == null) throw new Exception("Không tìm thấy sinh viên");
+            if (sv == null) throw new Exception("Không tìm thấy sinh viên");//ktra
 
-            // 2. Khởi tạo DTO trả về với thông tin kỳ học
+            //  Khởi tạo DTO trả về với thông tin kỳ học
             var ketQuaDTO = new KetQuaTraCuuDTO
             {
                 HocKy = hocKy,
@@ -222,8 +241,8 @@ namespace BackEndFinal.BUS
 
           
             var diemCuaKy = sv.KetQuaHocTaps?.FirstOrDefault(k => k.HocKy.Trim() == hocKy.Trim() && k.NamHoc.Trim() == namHoc.Trim());
-
-            if (diemCuaKy != null)
+            //Lọc danh sách kết quả học tập trong entity sinh viên với điều kiện cùng học kỳ và năm học
+            if (diemCuaKy != null)//tim được thì gán
             {
                 ketQuaDTO.GPA = diemCuaKy.GPA;
                 ketQuaDTO.DiemRenLuyen = diemCuaKy.DiemRenLuyen;
@@ -237,11 +256,11 @@ namespace BackEndFinal.BUS
             {
                 var kyLuatCuaKy = sv.KyLuats
                                     .Where(kl => kl.HocKy.Trim() == hocKy.Trim() && kl.NamHoc.Trim() == namHoc.Trim())
-                                    .ToList();
+                                    .ToList();//1 kỳ có thể có nhiều kỳ luật nên dùng vạy
 
-                if (kyLuatCuaKy.Any())
+                if (kyLuatCuaKy.Any())//Nếu có ít nhất 1 bản ghi
                 {
-                    ketQuaDTO.DanhSachKyLuat = kyLuatCuaKy.Select(kl => new ChiTietKyLuatDTO
+                    ketQuaDTO.DanhSachKyLuat = kyLuatCuaKy.Select(kl => new ChiTietKyLuatDTO//map sang DTO
                     {
                         LyDo=kl.LyDo,
                         HinhThuc = kl.HinhThuc,
@@ -256,11 +275,10 @@ namespace BackEndFinal.BUS
 
         public List<XemDSHocBongDTO> LayDanhSachXetHocBong(string hocKy, string namHoc)
         {
-            // 1. Lấy tất cả kết quả học tập trong kỳ đó
-            // (Giả sử DAO có hàm lấy list này, kèm theo thông tin SinhVien)
+            //  Lấy tất cả kết quả học tập trong kỳ đó
             var listKetQua = _dao.GetKetQuaByKy(hocKy, namHoc);
 
-            // 2. Lọc những người có học bổng (Khác "Không") và chuyển sang DTO hiển thị
+            // Lọc những người có học bổng (Khác "Không") và chuyển sang DTO hiển thị
             var danhSachXetDuyet = listKetQua
                 .Where(kq => kq.XepLoaiHocBong != "Không" && kq.XepLoaiHocBong != null)
                 .Select(kq => new XemDSHocBongDTO
@@ -298,11 +316,12 @@ namespace BackEndFinal.BUS
 
             return _dao.UpdateSinhVien(svToUpdate);
         }
-        public bool CapNhatDiem(string maSV, CapNhatDiemDTO input)
+        public bool CapNhatDiem(string maSV, CapNhatDiemDTO input)//maSV — mã sinh viên cần cập nhật
+                                                                  // input — DTO chứa GPA, điểm rèn luyện, học kỳ, năm học
         {
             var svToUpdate = new KetQuaHocTap()
             {
-                MaSV = maSV,
+                MaSV = maSV,//Gán mã sinh viên cần cập nhật.
                 HocKy = input.HocKy,
                 NamHoc= input.NamHoc,
                 GPA = input.GPA,
@@ -331,7 +350,7 @@ namespace BackEndFinal.BUS
         }
         public void ResetPassword(ResetPasswordDTO input)
         {
-            // 1. Lấy thông tin sinh viên từ bảng SinhVien để kiểm tra SĐT
+            // Lấy thông tin sinh viên từ bảng SinhVien để kiểm tra SĐT
             var sv = _dao.GetSinhVienFullInfo(input.MaSV);
 
             if (sv == null)
@@ -339,13 +358,13 @@ namespace BackEndFinal.BUS
                 throw new Exception("Mã sinh viên không tồn tại.");
             }
 
-            // 2. So sánh SĐT nhập vào với SĐT trong hồ sơ (Bỏ khoảng trắng cho chắc ăn)
+            //  So sánh SĐT nhập vào với SĐT trong hồ sơ (Bỏ khoảng trắng cho chắc ăn)
             if (sv.SoDienThoai?.Trim() != input.SoDienThoaiXacThuc.Trim())
             {
                 throw new Exception("Số điện thoại xác thực không chính xác!");
             }
 
-            // 3. Nếu thông tin khớp, tiến hành cập nhật mật khẩu bên bảng User
+            // Nếu thông tin khớp, tiến hành cập nhật mật khẩu bên bảng User
             bool isUpdated = _userDao.UpdatePassword(input.MaSV, input.MatKhauMoi);
 
             if (!isUpdated)

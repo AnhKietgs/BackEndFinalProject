@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 namespace BackEndFinal.Model
 {
+    //cổng kết nối giữa code và database
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)

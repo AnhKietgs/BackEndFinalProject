@@ -5,7 +5,7 @@ namespace BackEndFinal.DAO
 {
     public class SinhVienDao
     {
-        public readonly AppDbContext _context; // Giả sử bạn đã config EF Core
+        public readonly AppDbContext _context; //truy cập data base
 
         public SinhVienDao(AppDbContext context)
         {
@@ -19,10 +19,13 @@ namespace BackEndFinal.DAO
             string maSVUpper = maSV.Trim().ToUpper();
 
             return _context.SinhViens
-                .AsSplitQuery()
-                .Include(s => s.KetQuaHocTaps)
-                .Include(s => s.KyLuats)
-                // So sánh với mã trong database đã được chuyển về cùng dạng
+                .AsSplitQuery()//giúp EF Core tách nhiều Include thành nhiều query nhỏ, tránh:
+                                //SQL JOIN khổng lồ
+                                //Lặp dữ liệu
+                                //Nặng bộ nhớ
+                .Include(s => s.KetQuaHocTaps)//lấy danh sách điểm của sinh viên
+                .Include(s => s.KyLuats)//lấy danh sách kỷ luật
+                                        // So sánh với mã trong database đã được chuyển về cùng dạng
                 .FirstOrDefault(s => s.MaSV.Trim().ToUpper() == maSVUpper);
         }
         public SinhVien? GetSinhVienBasicInfor(string maSV)
@@ -54,7 +57,8 @@ namespace BackEndFinal.DAO
         {
 
             return _context.KetQuaHocTaps
-                .Include(k=>k.SinhVien)
+                .Include(k=>k.SinhVien)//để có thể lấy thông tin liên quan trong bảng sinh viên
+                                       //(Load thêm dữ liệu từ bảng SinhVien)
                 .ToList();
 
         }
@@ -68,14 +72,10 @@ namespace BackEndFinal.DAO
         }
         public List<KetQuaHocTap> GetKetQuaByKy(string hocKy, string namHoc)
         {
-            // _context là biến AppDbContext đã được khai báo trong DAO
             return _context.KetQuaHocTaps
-                           
                            .Include(k => k.SinhVien)
-
                            // Lọc theo đúng kỳ và năm được yêu cầu
                            .Where(k => k.HocKy == hocKy && k.NamHoc == namHoc)
-
                            // Thực thi câu lệnh và chuyển thành danh sách
                            .ToList();
         }
@@ -96,7 +96,7 @@ namespace BackEndFinal.DAO
             {
                 existing.GPA = kq.GPA;
                 existing.DiemRenLuyen = kq.DiemRenLuyen;
-                existing.XepLoaiHocBong = kq.XepLoaiHocBong;// Cập nhật loại học bổng mới
+                existing.XepLoaiHocBong = kq.XepLoaiHocBong;
                 existing.XepLoaiHocLuc= kq.XepLoaiHocLuc;
             }
             else
@@ -206,21 +206,16 @@ namespace BackEndFinal.DAO
 
         public bool DeleteKyLuatById(int id)
         {
-            // 1. Tìm bản ghi cần xóa trong DB theo khóa chính
-            // Phương thức .Find() rất hiệu quả cho việc này.
+            
             var kyLuatEntity = _context.KyLuats.Find(id);
 
-            // 2. Nếu không tìm thấy bản ghi -> Trả về false
             if (kyLuatEntity == null)
             {
                 return false;
             }
 
-            // 3. Nếu tìm thấy -> Đánh dấu bản ghi để xóa
+            // Nếu tìm thấy -> Đánh dấu bản ghi để xóa
             _context.KyLuats.Remove(kyLuatEntity);
-
-            // 4. Thực hiện lệnh commit thay đổi xuống database
-            // SaveChanges() trả về số lượng dòng bị ảnh hưởng.
             int rowsAffected = _context.SaveChanges();
 
             // Nếu có ít nhất 1 dòng bị ảnh hưởng, nghĩa là xóa thành công.
@@ -228,23 +223,15 @@ namespace BackEndFinal.DAO
         }
         public bool DeleteScoreById(int id)
         {
-            // 1. Tìm bản ghi cần xóa trong DB theo khóa chính ID
-            // Hàm .Find() rất hiệu quả để tìm theo primary key
-            var ketQuaEntity = _context.KetQuaHocTaps.Find(id);
-
-            // 2. Nếu không tìm thấy -> Trả về false
+         
+            var ketQuaEntity = _context.KetQuaHocTaps.Find(id);      
             if (ketQuaEntity == null)
             {
                 return false;
             }
-
-            // 3. Nếu tìm thấy -> Đánh dấu để xóa
             _context.KetQuaHocTaps.Remove(ketQuaEntity);
-
-            // 4. Thực hiện lệnh xóa xuống DB
             int rowsAffected = _context.SaveChanges();
 
-            // Trả về true nếu có ít nhất 1 dòng bị ảnh hưởng
             return rowsAffected > 0;
         }
     }

@@ -11,10 +11,10 @@ namespace BackEndFinal.Controllers
     [ApiController]
     public class CtsvController : ControllerBase
     {
-        // 1. Chỉ khai báo duy nhất BUS, bỏ DAO đi
+        
         private readonly QuanLyHocTapBUS _bus;
 
-        // 2. Sửa Constructor: Chỉ nhận BUS
+        
         public CtsvController(QuanLyHocTapBUS bus)
         {
             _bus = bus;
@@ -24,25 +24,9 @@ namespace BackEndFinal.Controllers
         [HttpPost("add-student")]
         public IActionResult ThemSinhVien([FromBody] ThemSinhVienDTO input)
         {
-            DateTime ngaySinhUtc = input.NgaySinh.Kind == DateTimeKind.Utc
-                           ? input.NgaySinh
-                           : DateTime.SpecifyKind(input.NgaySinh, DateTimeKind.Utc);
             try
-            {//mapping
-                var svEntity = new SinhVien
-                {
-                    MaSV = input.MaSV,
-                    HoTen = input.HoTen,
-                    SoDienThoai = input.SoDienThoai,
-                    DiaChi = input.DiaChi,
-                    NgaySinh = ngaySinhUtc,
-                    GioiTinh = input.GioiTinh,
-
-                    // Các danh sách con để rỗng hoặc null, vì mình không nhập lúc này
-                    KetQuaHocTaps = new List<KetQuaHocTap>(),
-                    KyLuats = new List<KyLuat>()
-                };
-                _bus.ThemSinhVienMoi(svEntity);
+            {
+                _bus.ThemSinhVienMoi(input);
                 return Ok("Thêm sinh viên và tự động tạo tài khoản thành công.");
             }
             catch (Exception ex)
@@ -70,20 +54,10 @@ namespace BackEndFinal.Controllers
         [HttpPost("nhap-ky-luat")]
         public IActionResult ThemKyLuat([FromBody] ThemKyLuatDTO input)
         {
-            var kyLuatEntity = new KyLuat
-            {
-                MaSV = input.MaSV,
-                LyDo = input.LyDo,
-                HinhThuc = input.HinhThuc,
-                NgayQuyetDinh = input.NgayQuyetDinh,
-                HocKy = input.HocKy,
-                NamHoc = input.NamHoc
-            };
-            // 4. Gọi BUS (Bạn cần vào BUS viết thêm hàm ThemKyLuat nhé)
-            // Đừng gọi _dao.AddKyLuat(kl) nữa
+           
             try
             {
-                _bus.ThemKyLuat(kyLuatEntity); // Giả sử bạn đã thêm hàm này bên BUS
+                _bus.ThemKyLuat(input); // Giả sử bạn đã thêm hàm này bên BUS
                 return Ok("Đã ghi nhận kỷ luật.");
             }
             catch (Exception ex) { return BadRequest(ex.Message); }
@@ -229,13 +203,12 @@ namespace BackEndFinal.Controllers
         {
             try
             {
-                // Gọi lớp BUS để xử lý yêu cầu xóa
+                
                 bool isDeleted = _bus.XoaKyLuat(id);
 
                 if (isDeleted)
                 {
-                    // Nếu xóa thành công, trả về mã 200 OK kèm thông báo.
-                    // Bạn cũng có thể trả về 204 No Content nếu không muốn gửi body.
+                 
                     return Ok(new { message = $"Đã xóa thành công kỷ luật có ID: {id}" });
                 }
                 else
@@ -251,8 +224,7 @@ namespace BackEndFinal.Controllers
             }
             catch (Exception ex)
             {
-                // Nếu có lỗi hệ thống không mong muốn, trả về 500 Internal Server Error.
-                // Ghi log lỗi ở đây trong ứng dụng thực tế.
+                // Nếu có lỗi hệ thống không mong muốn, trả về 500 Internal Server Error
                 return StatusCode(500, new { message = "Đã xảy ra lỗi hệ thống: " + ex.Message });
             }
         }
@@ -267,23 +239,23 @@ namespace BackEndFinal.Controllers
 
                 if (isDeleted)
                 {
-                    // 200 OK: Xóa thành công
+                   
                     return Ok(new { message = $"Đã xóa vĩnh viễn bản ghi điểm có ID: {id}" });
                 }
                 else
                 {
-                    // 404 Not Found: Không tìm thấy ID đó trong DB
+                    //  Không tìm thấy ID đó trong DB
                     return NotFound(new { message = $"Không tìm thấy bản ghi điểm với ID: {id}" });
                 }
             }
             catch (ArgumentException ex)
             {
-                // 400 Bad Request: Lỗi do ID không hợp lệ
+                // lỗi do ID không hợp lệ
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                // 500 Internal Server Error: Lỗi hệ thống khác
+                // Lỗi hệ thống khác
                 return StatusCode(500, new { message = "Lỗi hệ thống: " + ex.Message });
             }
         }

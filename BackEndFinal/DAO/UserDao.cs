@@ -15,7 +15,7 @@ namespace BackEndFinal.DAO
         public void AddUser(User user)
         {
             _context.Users.Add(user);
-            _context.SaveChanges();
+            _context.SaveChanges();// Lưu xuống DB
         }
         public void DeleteUser(string username)
         {
@@ -37,8 +37,7 @@ namespace BackEndFinal.DAO
             if (user == null) return false; // Không tìm thấy user
 
             user.Password = newPassword; // Cập nhật mật khẩu mới
-                                         // LƯU Ý QUAN TRỌNG: Trong thực tế, ở đây BẮT BUỘC phải mã hóa (Hash) mật khẩu trước khi lưu.
-                                         // Nhưng để đơn giản cho đồ án hiện tại, mình tạm lưu plain text theo cách bạn đang làm.
+                                         
 
             _context.SaveChanges(); // Lưu xuống DB
             return true;
