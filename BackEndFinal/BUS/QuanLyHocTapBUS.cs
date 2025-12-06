@@ -161,7 +161,7 @@ namespace BackEndFinal.BUS
                 DiaChi=sv.DiaChi,
                 SoDienThoai=sv.SoDienThoai
             })
-            .OrderByDescending(x => x.MaSV)
+            .OrderBy(x => x.MaSV)
             .ToList();
 
             return listDto;
