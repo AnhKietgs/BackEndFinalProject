@@ -160,7 +160,9 @@ namespace BackEndFinal.BUS
                 GioiTinh=sv.GioiTinh,
                 DiaChi=sv.DiaChi,
                 SoDienThoai=sv.SoDienThoai
-            }).ToList();
+            })
+            .OrderByDescending(x => x.MaSV)
+            .ToList();
 
             return listDto;
         }
