@@ -169,19 +169,21 @@ namespace BackEndFinal.BUS
         public List<XemDSachDiemDTO> LayDiemCaNhan()
         {
             List<KetQuaHocTap> listEntity = _dao.GetSinhVienResult(); // Gọi DAO lấy data gốc
-            
-           
-            var listDto = listEntity.Select( sv => new XemDSachDiemDTO
+
+
+            var listDto = listEntity.Select(sv => new XemDSachDiemDTO
             {
-                Id=sv.Id,
+                Id = sv.Id,
                 MaSV = sv.MaSV,
                 HocKy = sv.HocKy,
                 NamHoc = sv.NamHoc,
                 GPA = sv.GPA,
                 DiemRenLuyen = sv.DiemRenLuyen,
                 XepLoaiHocLuc = sv.XepLoaiHocLuc,
-                HoTen = sv.SinhVien?.HoTen??""
-            }).ToList();
+                HoTen = sv.SinhVien?.HoTen ?? ""
+            })
+                .OrderBy(x => x.MaSV)
+                .ToList();
 
             return listDto;
         }
