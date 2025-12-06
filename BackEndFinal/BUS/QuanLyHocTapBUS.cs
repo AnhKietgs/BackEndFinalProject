@@ -171,6 +171,7 @@ namespace BackEndFinal.BUS
            
             var listDto = listEntity.Select( sv => new XemDSachDiemDTO
             {
+                Id=sv.Id,
                 MaSV = sv.MaSV,
                 HocKy = sv.HocKy,
                 NamHoc = sv.NamHoc,
