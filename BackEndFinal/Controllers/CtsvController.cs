@@ -57,7 +57,7 @@ namespace BackEndFinal.Controllers
         {
             try
             {
-                _bus.XuLyNhapDiem(input); // Đã dùng BUS -> Chuẩn
+                _bus.XuLyNhapDiem(input);
                 return Ok("Đã nhập điểm và xét học bổng thành công.");
             }
             catch (Exception ex)
@@ -76,7 +76,6 @@ namespace BackEndFinal.Controllers
                 LyDo = input.LyDo,
                 HinhThuc = input.HinhThuc,
                 NgayQuyetDinh = input.NgayQuyetDinh,
-                // MAPPING THÊM 2 TRƯỜNG MỚI
                 HocKy = input.HocKy,
                 NamHoc = input.NamHoc
             };

@@ -90,7 +90,7 @@ namespace BackEndFinal.DAO
         {
             // Kiểm tra xem kỳ này có chưa, nếu có thì update, chưa thì thêm mới
             var existing = _context.KetQuaHocTaps
-                .FirstOrDefault(k => k.MaSV == kq.MaSV && k.HocKy == kq.HocKy);
+                .FirstOrDefault(k => k.MaSV == kq.MaSV && k.HocKy == kq.HocKy&&k.NamHoc==kq.NamHoc);
 
             if (existing != null)
             {
